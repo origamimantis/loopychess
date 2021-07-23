@@ -13,6 +13,9 @@ app.get("/",  (req, res) => {
 app.get("/dev",  (req, res) => {
 	res.sendFile( __dirname + "/views/indexd.html");
 });
+app.get("/test",  (req, res) => {
+	res.sendFile( __dirname + "/views/test.html");
+});
 
 const favicon = require("serve-favicon");
 app.use(favicon(__dirname + "/public/favicon.ico"));
