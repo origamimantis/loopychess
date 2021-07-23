@@ -38,6 +38,7 @@ const G = 7;
 const H = 8;
 
 
+
 let canvases = document.getElementById("canvases");
 let ctx = [];
 
@@ -68,6 +69,20 @@ function loadImg(fname)
       img.src = fname;
     })
 }
+
+async function loadPieceImgs()
+{
+  let d = {}
+  for (let piece of [PAWN,KNIGHT,BISHOP,ROOK,QUEEN,KING])
+  {
+    d[piece+"_w"] = await loadImg("assets/" + piece + "_w.png");
+    d[piece+"_b"] = await loadImg("assets/" + piece + "_b.png");
+  }
+  return d
+}
+
+
+
 
 // text with wrapping
 function drawText(l, text, x, y, maxWidth = undefined)
@@ -104,6 +119,7 @@ function drawCircle(l, x, y, radius, fill = false, stroke=true, strokeWidth=4)
 }
 
 let board_bg = null;
+let piece_imgs = null;
 
 function drawBoard()
 {
@@ -111,6 +127,8 @@ function drawBoard()
 }
 function drawPieces(grid)
 {
+  ctx[1].clearRect(0,0,760,640);
+
   for (let i = 0; i < 8; ++i)
   {
     for (let j = 0; j < 8; ++j)
@@ -118,11 +136,11 @@ function drawPieces(grid)
       let p = grid[j][i];
       if (p === null)
 	continue
-      ctx[1].fillStyle = p.color == BLACK ? "black" : "white";
-      ctx[1].fillText(p.type, ...idx2board(i,j));
+      ctx[1].drawImage(piece_imgs[p.type + "_" + (p.color == BLACK ? "b" : "w")], ...idx2board(i-0.5,j+0.5));
     }
   }
 }
+
 function idx2board(i, j)
 {
   return [BOARD_LEFT + i*64 + 32, BOARD_TOP + (8-j)*64 - 32];
@@ -137,6 +155,7 @@ function selectPiece(i,j,p)
   ctx[2].fillText(p.type, 600, 256)
   let m = getMovableWithoutPin(i, j, p);
   m.forEach( (v) => drawCircle(2, ...idx2board(...v), 30) );
+  return m;
 }
 
 
@@ -248,13 +267,46 @@ let getMethods = (obj) => Object.getOwnPropertyNames(obj).filter(item => typeof 
 
 let curGrid = null;
 
-window.onload = async () => {
-  socket = io.connect(hostname);
-  socket.on("id", (e) => {debug("id " + e.id + " joined");});
+const states = {
+  WAITING: 0,
+  TURNSTART: 1,
+  PIECESELECTED: 2,
+  OVER: 3
+}
 
+
+function coordInSet(s, i, j)
+{
+  let c = [...s]
+  for (let [m, n] of c)
+  {
+    if (m == i && n == j)
+      return true;
+  }
+  return false;
+}
+
+
+let curState = states.WAITING;
+let curPiece = null;
+let allowedMoves = null;
+
+window.onload = async () => {
+
+
+  piece_imgs = await loadPieceImgs();
   board_bg = await loadImg("board.png");
+
+  socket = io.connect(hostname);
   
-  socket.emit("board_request")
+  socket.on("id", (e) => {
+    debug("id " + e.id + " joined");
+    socket.emit("board_request")
+    curState = states.TURNSTART;
+    document.getElementById("curRoom").textContent = "Current room: " + e.id;
+    document.getElementById("text").textContent = "";
+  });
+  
   socket.on("board_update", (e) => {
 
     curGrid = e.board.grid;
@@ -275,9 +327,33 @@ window.onload = async () => {
     if (0 <= i && i < 8 && 0 <= j && j < 8)
     {
       // clicked inside the board
-      let p = curGrid[j][i];
-      if (p !== null)
-	selectPiece(i,j,p)
+      if (curState == states.TURNSTART)
+      {
+	let p = curGrid[j][i];
+	if (p !== null)
+	{
+	  allowedMoves = selectPiece(i,j,p)
+	  curState = states.PIECESELECTED;
+	  curPiece = [i,j];
+	}
+      }
+      else if (curState == states.PIECESELECTED)
+      {
+	if (coordInSet(allowedMoves, i, j))
+	{
+	  socket.emit("make_move", {ini: curPiece, fin: [i,j]});
+
+	  curState = states.TURNSTART;
+	  curPiece = null;
+	  allowedMoves = null;
+	}
+	else
+	{
+	  curState = states.TURNSTART;
+	  curPiece = null;
+	  allowedMoves = null;
+	}
+      }
     }
     else
     {

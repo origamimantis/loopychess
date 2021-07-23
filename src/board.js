@@ -49,6 +49,15 @@ class Board
   {
     return this.grid[c2-1][c1-1];
   }
+  makeMove(start, end)
+  {
+    let [i0,j0] = start;
+    let [i1,j1] = end;
+
+    this.grid[j1][i1] = this.grid[j0][i0];
+    this.grid[j0][i0] = null;
+
+  }
   addPiece(c1, c2, piece, color)
   {
     this.grid[c2-1][c1-1] = {type: piece, color:color};

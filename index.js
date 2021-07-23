@@ -103,11 +103,20 @@ io.on("connection", (socket)=>
   socket.emit('id', {id:id})	
 
   socket.on('test',(data)=> {
-    console.log("received test value {" + data + "}");
+    console.log("received form value {" + data + "}");
   });
 
   socket.on('board_request',(data)=> {
     socket.emit("board_update", {board : rooms[socket.pairId].board});
+  });
+
+  socket.on('make_move',(data)=> {
+    let r = rooms[socket.pairId];
+    r.board.makeMove(data.ini, data.fin);
+    for (sock of r.users)
+    {
+      sock.emit("board_update", {board : r.board});
+    }
   });
 
   socket.on('canvas_data',(data)=> {
