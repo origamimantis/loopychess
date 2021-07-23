@@ -26,38 +26,59 @@ let users =
 	{
 	}
 
-let games =
-	{
-	}
+
+// room = {board: Board, users: [], otherinfo: ...}
+
+
+//import {Board} from "src/chessboard.js";
+
+const b = require("./src/board.js");
+class Room
+{
+  constructor(id)
+  {
+    this.board = new b.Board();
+    this.users = []
+    this.id = id;
+  }
+  addUser(socket)
+  {
+    this.users.push(socket);
+  }
+  delUser(socket)
+  {
+    for (let i = 0; i < this.users.length; ++i)
+    {
+      if (this.users[i] == socket)
+      {
+	this.users.splice(i, 1);
+	return;
+      }
+    }
+  }
+  numUsers()
+  {
+    return this.users.length;
+  }
+}
+
+
+
+let rooms = {};
 
 function addSocket(id, socket)
 {
-	
-	if (users[id] == undefined)
-	{
-	 users[id] = [socket];
-	}
-	else
-	{
-	 users[id].push(socket);
-	}
+  if (rooms[id] == undefined)
+    rooms[id] = new Room(id);
+
+  rooms[id].addUser(socket)
 
 }
+
 function removeSocket(socket)
 {
-	let arr = users[socket.pairId];
-	for (let i = 0; i < arr.length; ++i)
-	{
-		if (arr[i] == socket)
-		{
-			arr.splice(i, 1);
-
-			if (arr.length == 0)
-			{	delete users[socket.pairId]; }
-
-			return;
-		}
-	}
+  let room = rooms[socket.pairId];
+  room.delUser(socket)
 }
 
 
@@ -74,6 +95,11 @@ io.on("connection", (socket)=>
   socket.on('test',(data)=> {
     console.log("received test value {" + data + "}");
   });
+
+  socket.on('board_request',(data)=> {
+    socket.emit("board_update", {board : rooms[socket.pairId].board});
+  });
+
   socket.on('canvas_data',(data)=> {
     for (let sock of users[socket.pairId])
     {
@@ -111,4 +137,7 @@ io.on("connection", (socket)=>
   });
 
     
-  });
+});
+
+// every 5 minutes, check for empty rooms and delete them
+setInterval(()=>{console.log("TODO: empty room check");}, 300000);
