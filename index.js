@@ -10,6 +10,9 @@ app.use(express.static(__dirname + "/public"));
 app.get("/",  (req, res) => {
 	res.sendFile( __dirname + "/views/index.html");
 });
+app.get("/dev",  (req, res) => {
+	res.sendFile( __dirname + "/views/indexd.html");
+});
 
 const favicon = require("serve-favicon");
 app.use(favicon(__dirname + "/public/favicon.ico"));
