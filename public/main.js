@@ -1,6 +1,7 @@
 'use strict';
 
-let hostname = "http://192.168.1.229:4445"
+//let hostname = "http://192.168.1.229:4445"
+let hostname = "http://localhost:4445"
 
 
 let socket;
@@ -159,16 +160,6 @@ function addIfCapture(m, i, j, color)
   return false;
     
 }
-function addIfEmptyOrCapture(m, i, j, color)
-{
-  if (0 <= i && i < 8 && 0 <= j && j < 8 && (curGrid[j][i] === null || curGrid[j][i].color !== color))
-  {
-    m.add([i,j]);
-    return true;
-  }
-  return false;
-    
-}
 
 function getMovableWithoutPin(i, j, p)
 {
@@ -195,17 +186,56 @@ function getMovableWithoutPin(i, j, p)
       {
 	for (let Lj of [ j-1, j+1 ])
 	{
-	  addIfEmptyOrCapture(m, Li, Lj, p.color);
+	  if (addIfEmpty(m, Li, Lj) == false)
+	    addIfCapture(m, Li, Lj, p.color);
 	}
       }
       for (let Lj of [ j-2, j+2])
       {
 	for (let Li of [ i-1, i+1 ])
 	{
-	  addIfEmptyOrCapture(m, Li, Lj, p.color);
+	  if (addIfEmpty(m, Li, Lj) == false)
+	    addIfCapture(m, Li, Lj, p.color);
 	}
       }
       break;
+    case QUEEN:
+    case BISHOP:
+      for (let [dx, dy] of [[1,1], [1,-1], [-1,1], [-1,-1]])
+      {
+        let movable = true;
+	let ni = i;
+	let nj = j;
+	while (movable == true)
+	{
+	  ni += dx;
+	  nj += dy;
+	  movable = addIfEmpty(m, ni, nj);
+	}
+	addIfCapture(m, ni, nj, p.color);
+      }
+      
+      if (p.type == BISHOP)
+	break;
+    case ROOK:
+      for (let [dx, dy] of [[0,1], [0,-1], [1,0], [-1,0]])
+      {
+        let movable = true;
+	let ni = i;
+	let nj = j;
+	while (movable == true)
+	{
+	  ni += dx;
+	  nj += dy;
+	  movable = addIfEmpty(m, ni, nj);
+	}
+	addIfCapture(m, ni, nj, p.color);
+      }
+      break;
+    case KING:
+      break;
+
+      
   }
   return m;
 }

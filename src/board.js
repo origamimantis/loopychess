@@ -28,8 +28,9 @@ class Board
     this.initializeBoard();
     this.initializePieces();
     this.addPiece(D, 3, PAWN, BLACK);
-    this.addPiece(F, 4, KNIGHT, WHITE);
+    this.addPiece(F, 4, BISHOP, WHITE);
     this.addPiece(F, 5, PAWN, WHITE);
+    this.addPiece(D, 5, QUEEN, WHITE);
   }
   initializeBoard()
   {
