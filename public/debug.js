@@ -10,6 +10,7 @@ form.addEventListener('submit', function(e) {
       if (newID.length == 4)
       {
 	socket.emit('pair', newID);
+	document.getElementById("text").textContent = "/join <roomnumber> to switch rooms.";
       }
       else
       {
@@ -18,7 +19,6 @@ form.addEventListener('submit', function(e) {
     }
     else
     {
-      document.getElementById("text").textContent = "";
       socket.emit('test', input.value);
     }
     input.value = '';

@@ -28,6 +28,10 @@ const KING = "king";
 const WHITE = 1;
 const BLACK = -1;
 
+let color2text = {0:"Spectating"};
+color2text[WHITE] = "White";
+color2text[BLACK] = "Black";
+
 const A = 1;
 const B = 2;
 const C = 3;
@@ -136,7 +140,10 @@ function drawPieces(grid)
       let p = grid[j][i];
       if (p === null)
 	continue
-      ctx[1].drawImage(piece_imgs[p.type + "_" + (p.color == BLACK ? "b" : "w")], ...idx2board(i-0.5,j+0.5));
+      if (color == BLACK)
+	ctx[1].drawImage(piece_imgs[p.type + "_" + (p.color == BLACK ? "b" : "w")], ...idx2board(7-i-0.5,8-j-0.5));
+      else
+	ctx[1].drawImage(piece_imgs[p.type + "_" + (p.color == BLACK ? "b" : "w")], ...idx2board(i-0.5,j+0.5));
     }
   }
 }
@@ -154,7 +161,16 @@ function selectPiece(i,j,p)
 {
   ctx[2].fillText(p.type, 600, 256)
   let m = getMovableWithoutPin(i, j, p);
-  m.forEach( (v) => drawCircle(2, ...idx2board(...v), 30) );
+  m.forEach( (v) => 
+    {
+      let v2 = [...v]
+      if (color == BLACK)
+      {
+	v2[0] = 7-v2[0];
+	v2[1] = 7-v2[1];
+      }
+      drawCircle(2, ...idx2board(...v2), 30);
+    });
   return m;
 }
 
@@ -286,9 +302,47 @@ function coordInSet(s, i, j)
   return false;
 }
 
+function getColor(number)
+{
+  let a = null;
+  let b = null
+
+  if (number == 1)
+  {
+    a = WHITE;
+    b = "White";
+  }
+  else if (number == 2)
+  {
+    a = BLACK;
+    b = "Black";
+  }
+  else
+  {
+    a = 0;
+    b = "Spectating";
+  }
+  return [a,b];
+}
+
+function click2board(i, j)
+{
+  if (color == BLACK)
+  {
+    return [7-i, 7-j];
+  }
+  else
+    return [i,j];
+}
+
+
+
+let color = null;
+let colorText = null;
 
 let curState = states.WAITING;
-let curPiece = null;
+let curCoord = null;
+let curTurn = null;
 let allowedMoves = null;
 
 window.onload = async () => {
@@ -300,19 +354,25 @@ window.onload = async () => {
   socket = io.connect(hostname);
   
   socket.on("id", (e) => {
-    debug("id " + e.id + " joined");
+
+    [color, colorText] = getColor(e.number);
+
     socket.emit("board_request")
     curState = states.TURNSTART;
     document.getElementById("curRoom").textContent = "Current room: " + e.id;
-    document.getElementById("text").textContent = "";
+    document.getElementById("colorText").textContent = "You are: " + colorText;
   });
   
   socket.on("board_update", (e) => {
 
     curGrid = e.board.grid;
+    curTurn = e.board.turn;
+    console.log(color2text, curTurn);
+    document.getElementById("curTurn").textContent =  color2text[curTurn] + " to move.";
 
     drawBoard()
     drawPieces(e.board.grid)
+    curState = states.TURNSTART;
   });
 
   window.onmousedown = (e) => {
@@ -326,34 +386,37 @@ window.onload = async () => {
 
     if (0 <= i && i < 8 && 0 <= j && j < 8)
     {
+      [i,j] = click2board(i,j);
       // clicked inside the board
-      if (curState == states.TURNSTART)
+      if (curCoord !== null)
+      {
+	if (color == curTurn && coordInSet(allowedMoves, i, j))
+	{
+	  socket.emit("make_move", {ini: curCoord, fin: [i,j]});
+	}
+	curState = states.TURNSTART;
+	curCoord = null;
+	allowedMoves = null;
+      }
+      if (curCoord === null)
       {
 	let p = curGrid[j][i];
 	if (p !== null)
 	{
-	  allowedMoves = selectPiece(i,j,p)
-	  curState = states.PIECESELECTED;
-	  curPiece = [i,j];
-	}
-      }
-      else if (curState == states.PIECESELECTED)
-      {
-	if (coordInSet(allowedMoves, i, j))
-	{
-	  socket.emit("make_move", {ini: curPiece, fin: [i,j]});
-
-	  curState = states.TURNSTART;
-	  curPiece = null;
-	  allowedMoves = null;
+	  if (p.color == color)
+	  {
+	    allowedMoves = selectPiece(i,j,p)
+	    curCoord = [i,j];
+	    if (curTurn == color)
+	      curState = states.PIECESELECTED;
+	  }
 	}
 	else
 	{
-	  curState = states.TURNSTART;
-	  curPiece = null;
-	  allowedMoves = null;
+	  curCoord = null;
 	}
       }
+      
     }
     else
     {

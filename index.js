@@ -94,13 +94,12 @@ function removeSocket(socket)
 
 io.on("connection", (socket)=>
 {
-  console.log("ey")
   var id = crypto.randomBytes(2).toString('hex').toLowerCase();
 
   socket.pairId = id;
   addSocket(id, socket);
   
-  socket.emit('id', {id:id})	
+  socket.emit('id', {id:id, number:rooms[id].users.length})	
 
   socket.on('test',(data)=> {
     console.log("received form value {" + data + "}");
@@ -136,7 +135,7 @@ io.on("connection", (socket)=>
 
       addSocket(new_id, socket);
 
-      socket.emit('id', {id:new_id})	
+      socket.emit('id', {id:new_id, number:rooms[new_id].users.length})
     }
     
   });
@@ -159,4 +158,14 @@ io.on("connection", (socket)=>
 });
 
 // every 5 minutes, check for empty rooms and delete them
-setInterval(()=>{console.log("TODO: empty room check");}, 300000);
+setInterval(()=>{
+  let i = false;
+  for (let id of Object.keys(rooms))
+  {
+    if (rooms[id].users.length == 0)
+    {
+      i = true;
+      delete rooms[id];
+    }
+  }
+}, 300000);

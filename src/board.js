@@ -27,10 +27,7 @@ class Board
     
     this.initializeBoard();
     this.initializePieces();
-    this.addPiece(D, 3, PAWN, BLACK);
-    this.addPiece(F, 4, BISHOP, WHITE);
-    this.addPiece(F, 5, PAWN, WHITE);
-    this.addPiece(D, 5, QUEEN, WHITE);
+    this.turn = WHITE;
   }
   initializeBoard()
   {
@@ -54,8 +51,13 @@ class Board
     let [i0,j0] = start;
     let [i1,j1] = end;
 
+    if (this.grid[j0][i0].color != this.turn)
+      console.log("not your turn");
+
     this.grid[j1][i1] = this.grid[j0][i0];
     this.grid[j0][i0] = null;
+
+    this.turn = -this.turn;
 
   }
   addPiece(c1, c2, piece, color)

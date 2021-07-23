@@ -1,3 +1,4 @@
 to start server, "node index.js"
-register clicks
-add pieces
+
+allow any room code >= 4 letters,
+get rid of the crypto thing and just do random(0-9, a-z) 4 times for the random codes
