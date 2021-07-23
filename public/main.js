@@ -1,6 +1,6 @@
 'use strict';
 
-let hostname = "http://localhost:4445"
+let hostname = "http://192.168.1.229:4445"
 
 
 let socket;
