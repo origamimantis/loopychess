@@ -26,8 +26,16 @@ var http = require('http');
 const server = http.createServer(app)
 server.listen(port, () => console.log("Live on port " + port));
 
+let cors = {
+  origin: "http://foonkychess.herokuapp.com",
+  methods: ["GET", "POST"],
+  credentials: true};
+
+
+
 const { Server } = require("socket.io");
-const io = new Server(server)
+const io = new Server(server, {cors:cors})
+
 
 let users =
 	{
