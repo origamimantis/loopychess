@@ -1,6 +1,6 @@
 'use strict';
 
-let hostname = "https://foonkychess.herokuapp.com/"
+let hostname = "https://foonkychess.herokuapp.com/:4445"
 //let hostname = document.getElementById("host").getAttribute("hostname");
 
 
