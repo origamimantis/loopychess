@@ -2,8 +2,7 @@ const express = require("express");
 var crypto = require('crypto');
 
 const app = express();
-//const port = process.env.PORT;
-const port = 4445;
+const port = process.env.PORT;
 
 app.use(express.static(__dirname + "/public"));
 
@@ -26,11 +25,8 @@ const server = http.createServer(app)
 server.listen(port, () => console.log("Live on port " + port));
 
 const { Server } = require("socket.io");
-const io = new Server(server, {cors: {
-	origin: "http://67.169.133.23:4445",
-	methods: ["GET", "POST"],
-	credentials: true}
-})
+const io = new Server(server)
+
 let users =
 	{
 	}
