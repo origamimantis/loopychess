@@ -2,7 +2,7 @@ const express = require("express");
 var crypto = require('crypto');
 
 const app = express();
-let port = 4445;//process.env.PORT;
+let port = process.env.PORT;
 if (process.argv[2] == "test")
   port = 4445;
 
