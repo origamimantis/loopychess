@@ -349,6 +349,7 @@ window.onload = async () => {
 
   piece_imgs = await loadPieceImgs();
   board_bg = await loadImg("board.png");
+  drawBoard();
 
   socket = io.connect(hostname);
   
