@@ -1,7 +1,7 @@
 'use strict';
 
-//let hostname = "http://192.168.1.229:4445"
-let hostname = document.getElementById("host").getAttribute("hostname");
+let hostname = "https://foonkychess.herokuapp.com/"
+//let hostname = document.getElementById("host").getAttribute("hostname");
 
 
 let socket;
