@@ -2,7 +2,8 @@ const express = require("express");
 var crypto = require('crypto');
 
 const app = express();
-const port = process.env.PORT;
+//const port = process.env.PORT;
+const port = 4445;
 
 app.use(express.static(__dirname + "/public"));
 
