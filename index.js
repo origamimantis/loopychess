@@ -17,8 +17,8 @@ app.get("/test",  (req, res) => {
 	res.sendFile( __dirname + "/views/test.html");
 });
 
-const favicon = require("serve-favicon");
-app.use(favicon(__dirname + "/public/favicon.ico"));
+//const favicon = require("serve-favicon");
+//app.use(favicon(__dirname + "/public/favicon.ico"));
 
 var http = require('http');
 
