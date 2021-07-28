@@ -231,7 +231,7 @@ function selectPiece(i,j,board_)
 
 function addIfEmpty(m, i, j, board_)
 {
-  i = i % 8;
+  i = (i+8) % 8;
   console.log(i);
   if (0 <= j && j < 8 && board_[j][i] === null)
   // classic
