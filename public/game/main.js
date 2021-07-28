@@ -374,8 +374,8 @@ function getMovableWithoutPin(i, j, board_)
 	  if (through == true)
 	    addIfEmpty([mov, all], 6, j, board_);
 	}
-	// king-side
-	if (board_[j][3] === null && board_[j][2] === null && board_[j][1] === null
+	// queen-side
+	if (board_[j][3] === null && board_[j][2] === null
 	  && board_[j][0] !== null && board_[j][0].moved == false)
 	{
 	  let through = true
