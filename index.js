@@ -8,18 +8,25 @@ if (process.argv[2] == "test")
 
 app.use(express.static(__dirname + "/public"));
 
+const an_re = "[A-Za-z0-9]"
+
+
+
+
+
 app.get("/",  (req, res) => {
 	res.sendFile( __dirname + "/views/index.html");
 });
-app.get("/dev",  (req, res) => {
-	res.sendFile( __dirname + "/views/indexd.html");
+app.get("/join/"+an_re+an_re+an_re+an_re,  (req, res) => {
+  res.sendFile( __dirname + "/views/join.html");
+});
+app.get("/game/"+an_re+an_re+an_re+an_re,  (req, res) => {
+  res.sendFile( __dirname + "/views/game.html");
 });
 app.get("/test",  (req, res) => {
 	res.sendFile( __dirname + "/views/test.html");
 });
 
-//const favicon = require("serve-favicon");
-//app.use(favicon(__dirname + "/public/favicon.ico"));
 
 var http = require('http');
 
@@ -45,9 +52,8 @@ let users =
 // room = {board: Board, users: [], otherinfo: ...}
 
 
-//import {Board} from "src/chessboard.js";
-
 const b = require("./src/board.js");
+const c = require("./src/constants.js");
 class Room
 {
   constructor(id)
@@ -56,17 +62,27 @@ class Room
     this.users = []
     this.id = id;
   }
-  addUser(socket)
+  getUserByName(name)
   {
-    this.users.push(socket);
+    for (let o of this.users)
+    {
+      if (o.name == name)
+	return o;
+    }
+    return null;
+  }
+  addUser(obj)
+  {
+    this.users.push(obj);
   }
   delUser(socket)
   {
     for (let i = 0; i < this.users.length; ++i)
     {
-      if (this.users[i] == socket)
+      if (this.users[i].socket == socket)
       {
-	this.users.splice(i, 1);
+	//this.users.splice(i, 1);
+	this.users[i].socket = null;
 	return;
       }
     }
@@ -75,36 +91,75 @@ class Room
   {
     return this.users.length;
   }
+  getUserInfo()
+  {
+    let a = [];
+    for (let u of this.users)
+    {
+      if (u.socket !== null)
+	a.push({name:u.name, team:u.team});
+    }
+    return a;
+  }
+  isEmpty()
+  {
+    for (let o of this.users)
+    {
+      if (o.socket !== null)
+	return false;
+    }
+    return true;
+  }
 }
 
 
 
 let rooms = {};
 
-function addSocket(id, socket)
+function addSocket(id, name, socket)
 {
   if (rooms[id] == undefined)
     rooms[id] = new Room(id);
 
-  rooms[id].addUser(socket)
+  let l = rooms[id].users.length;
+  let team = c.SPECTATING;
+  if (l == 0)	    team = c.WHITE;
+  else if (l == 1)  team = c.BLACK;
+
+  rooms[id].addUser({name:name, team:team, socket:socket})
 
 }
 
 function removeSocket(socket)
 {
   let room = rooms[socket.pairId];
-  room.delUser(socket)
+  if (room !== undefined)
+    room.delUser(socket);
+}
+
+
+
+function users_update(id)
+{
+  let room = rooms[id];
+  if (room === undefined)
+    return
+
+  let info = room.getUserInfo();
+  let i = 0;
+  for (let u of rooms[id].users)
+  {
+    if (u.socket !== null)
+    {
+      u.socket.emit('users_update', {info: info, i: i });
+      ++ i;
+    }
+  }
 }
 
 
 io.on("connection", (socket)=>
 {
-  var id = crypto.randomBytes(2).toString('hex').toLowerCase();
-
-  socket.pairId = id;
-  addSocket(id, socket);
-  
-  socket.emit('id', {id:id, number:rooms[id].users.length})	
 
   socket.on('test',(data)=> {
     console.log("received form value {" + data + "}");
@@ -117,43 +172,65 @@ io.on("connection", (socket)=>
   socket.on('make_move',(data)=> {
     let r = rooms[socket.pairId];
     r.board.makeMove(data.ini, data.fin);
-    for (sock of r.users)
+    for (u of r.users)
     {
-      sock.emit("board_update", {board : r.board});
+      if (u.socket !== null)
+	u.socket.emit("board_update", {board : r.board});
     }
   });
 
   socket.on('canvas_data',(data)=> {
-    for (let sock of users[socket.pairId])
+    for (let u of users[socket.pairId])
     {
-      sock.emit("draw_data", data);
+      if (u.socket !== null)
+	u.socket.emit("draw_data", data);
     }
   });
 
-  socket.on('pair',(new_id)=> {
-    if (new_id.length>0 && new_id != socket.pairId)
+  socket.on('pair',(id_name)=> {
+    let att_id = id_name.id;
+    if (att_id.length>0 && att_id != socket.pairId)
     {
+      let room = rooms[att_id];
+      let collision;
+      if (room === undefined)
+	collision = null;
+      else
+	collision = rooms[att_id].getUserByName(id_name.name);
+
+      if (collision !== null && collision.socket !== null)
+      {
+	socket.emit("name_collision", {name:id_name.name});
+	return
+      }
+
       removeSocket(socket);
 
-      new_id = new_id.toLowerCase();
+      let new_id = id_name.id.toLowerCase();
       socket.pairId = new_id;
 
-      addSocket(new_id, socket);
+      if (collision === null)
+	addSocket(new_id, id_name.name, socket);
 
-      socket.emit('id', {id:new_id, number:rooms[new_id].users.length})
+      // reconnect
+      else if (collision.socket === null)
+	collision.socket = socket;
+
+      users_update(new_id);
     }
     
   });
   socket.on('cursor',(xy)=> {
-    for (let sock of users[socket.pairId])
+    for (let u of users[socket.pairId])
     {
-      sock.emit("cursor", xy);
+      u.socket.emit("cursor", xy);
     }
 	  
   });
 
   socket.on('disconnect',()=> {
     removeSocket(socket);
+    users_update(socket.pairId);
   });
   socket.on('debug',(stuff)=> {
     console.log(stuff);

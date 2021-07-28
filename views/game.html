@@ -9,33 +9,33 @@
 	  pointer-events: none;
 	  user-select: none;
 	}
-	body { min-height: 90;}
-
-      #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
-
+	button{
+		position:relative;
+	}
+	body{ font-family: 'Courier New', monospace; }
     </style>
   </head>
   <body>
-	  <div id="host" hostname="localhost:4445"></div>
+	  <!--div id="host" hostname="https://foonkychess.herokuapp.com"></div-->
+	  <div id="host" hostname="http://localhost:4445"></div>
 	  <div id="canvases"></div>
-	  <p id="curRoom" >Current room:</p>
+          <p id="curRoom" >Current room:</p>
           <p id="colorText" >You are:</p>
           <p id="curTurn" >??? to move.</p>
-          <p id="text" >/join &lt;roomnumber&gt; to switch rooms.</p>
-	  <script>
+	  <p id="jointext" >Join link:</p>
+	  <button id = "joincopy" >foonkychess.herokuapp.com</button>
+	  <p id="userlist" style="white-space: pre"></p>
+          <script>
             document.getElementById("curRoom").style["margin-left"]= "560px"
             document.getElementById("colorText").style["margin-left"]= "560px"
             document.getElementById("curTurn").style["margin-left"]= "560px"
-            document.getElementById("text").style["margin-left"]= "560px"
+            document.getElementById("jointext").style["margin-left"]= "560px"
+            document.getElementById("joincopy").style["margin-left"]= "560px"
+            document.getElementById("userlist").style["margin-left"]= "560px"
     </script>
 
-
-    <ul id="messages"></ul>
-    <form id="form" action="">
-      <input id="input" autocomplete="off" /><button>Send</button>
-    </form>
     <script src="/socket.io/socket.io.js"></script>
     <script src="main.js"></script>
-    <script src="debug.js"></script>
+    <script src="copylink.js"></script>
   </body>
 </html>

@@ -1,6 +1,28 @@
 'use strict';
 
+let realurl = window.location.href;
+
 let hostname = document.getElementById("host").getAttribute("hostname");
+
+// url parsing
+
+let [path, params] = realurl.split("?");
+window.history.pushState({}, document.title, window.location.pathname);
+
+let searchParams = new URLSearchParams(params);
+
+
+
+
+path = path.split("/");
+let id = path[path.length-1];
+
+if (searchParams.has("name") === false)
+  window.location.replace("/join/"+id);
+
+let name = searchParams.get("name");
+
+console.log(name);
 
 
 let socket;
@@ -127,6 +149,7 @@ let piece_imgs = null;
 function drawBoard()
 {
   ctx[0].drawImage(board_bg, BOARD_LEFT, BOARD_TOP);
+  
 }
 function drawPieces(grid)
 {
@@ -145,6 +168,18 @@ function drawPieces(grid)
 	ctx[1].drawImage(piece_imgs[p.type + "_" + (p.color == BLACK ? "b" : "w")], ...idx2board(i-0.5,j+0.5));
     }
   }
+  let attackers = inCheck(color, grid);
+  
+  attackers.forEach( (v) => 
+    {
+      let v2 = [...v]
+      if (color == BLACK)
+      {
+	v2[0] = 7-v2[0];
+	v2[1] = 7-v2[1];
+      }
+      drawCircle(1, ...idx2board(...v2), 24, false, "red");
+    });
 }
 
 function idx2board(i, j)
@@ -156,13 +191,28 @@ function board2idx(x, y)
   return [Math.floor((x-BOARD_LEFT)/64), 7-Math.floor((y-BOARD_TOP)/64)]
 }
 
-function selectPiece(i,j,p)
+function selectPiece(i,j,board_)
 {
+  let p = board_[j][i];
   ctx[2].fillText(p.type, 600, 256)
-  let m = getMovableWithoutPin(i, j, p);
+
+  let m = getMovableWithoutPin(i, j, board_).all;
+  
+  let marray = Array.from(m);
+  for (let c of marray)
+  {
+    let [i1,j1] = JSON.parse(c);
+    let ifMoved = copyBoard(board_);
+    ifMoved[j1][i1] = ifMoved[j][i];
+    ifMoved[j][i] = null;
+    if (inCheck(p.color, ifMoved).length > 0)
+      m.delete(c)
+  }
+
+
   m.forEach( (v) => 
     {
-      let v2 = [...v]
+      let v2 = [...JSON.parse(v)]
       if (color == BLACK)
       {
 	v2[0] = 7-v2[0];
@@ -170,72 +220,102 @@ function selectPiece(i,j,p)
       }
       drawCircle(2, ...idx2board(...v2), 30);
     });
+  
+
+
+
+
   return m;
 }
 
 
-function addIfEmpty(m, i, j)
+function addIfEmpty(m, i, j, board_)
 {
-  if (0 <= i && i < 8 && 0 <= j && j < 8 && curGrid[j][i] === null)
+  if (0 <= i && i < 8 && 0 <= j && j < 8 && board_[j][i] === null)
   {
-    m.add([i,j])
+    for (let s of m)
+      s.add(JSON.stringify([i,j]));
     return true;
   }
   return false;
 }
 
-function addIfCapture(m, i, j, color)
+function addIfCapture(m, i, j, color, board_)
 {
-  if (0 <= i && i < 8 && 0 <= j && j < 8 && curGrid[j][i] !== null && curGrid[j][i].color !== color)
+  if (0 <= i && i < 8 && 0 <= j && j < 8 && board_[j][i] !== null && board_[j][i].color !== color)
   {
-    m.add([i,j]);
+    for (let s of m)
+      s.add(JSON.stringify([i,j]));
     return true;
   }
   return false;
     
 }
 
-function getMovableWithoutPin(i, j, p)
+function copyBoard(board_)
 {
-  let m = new Set();
+  return JSON.parse(JSON.stringify(board_))
+}
+
+let diags = [[1,1], [1,-1], [-1,1], [-1,-1]];
+let orthogs = [[0,1], [0,-1], [1,0], [-1,0]];
+
+
+function getMovableWithoutPin(i, j, board_)
+{
+  let p = board_[j][i];
+
+
+  let mov = new Set();
+  let atk = new Set();
+  let all = new Set();
   switch (p.type)
   {
     case PAWN:
       let direction = p.color;
-      if (addIfEmpty(m, i, j+direction))
+      if (addIfEmpty([mov, all], i, j+direction, board_))
       {
 	// 2 spaces if on starting row, but no jumps
 	if ((j-direction)%7 == 0)
-	  addIfEmpty(m, i, j+2*direction)
+	  addIfEmpty([mov, all], i, j+2*direction, board_)
       }
 
       // captures
-      addIfCapture(m, i+1, j+direction, p.color)
-      addIfCapture(m, i-1, j+direction, p.color)
+      addIfCapture([atk, all], i+1, j+direction, p.color, board_)
+      addIfCapture([atk, all], i-1, j+direction, p.color, board_)
       
       // TODO: en passant
+      for (let dx of [-1, 1])
+      {
+	let thing = board_[j][i+dx];
+	if (thing && thing.type == PAWN && thing.color != p.color && thing.en_passant_capturable == true)
+	{
+	  addIfEmpty([atk, all], i+dx, j+direction, board_);
+	}
+      }
+
       break;
     case KNIGHT:
       for (let Li of [ i-2, i+2])
       {
 	for (let Lj of [ j-1, j+1 ])
 	{
-	  if (addIfEmpty(m, Li, Lj) == false)
-	    addIfCapture(m, Li, Lj, p.color);
+	  if (addIfEmpty([atk, all], Li, Lj, board_) == false)
+	    addIfCapture([atk, all], Li, Lj, p.color, board_);
 	}
       }
       for (let Lj of [ j-2, j+2])
       {
 	for (let Li of [ i-1, i+1 ])
 	{
-	  if (addIfEmpty(m, Li, Lj) == false)
-	    addIfCapture(m, Li, Lj, p.color);
+	  if (addIfEmpty([atk, all], Li, Lj, board_) == false)
+	    addIfCapture([atk, all], Li, Lj, p.color, board_);
 	}
       }
       break;
     case QUEEN:
     case BISHOP:
-      for (let [dx, dy] of [[1,1], [1,-1], [-1,1], [-1,-1]])
+      for (let [dx, dy] of diags)
       {
         let movable = true;
 	let ni = i;
@@ -244,15 +324,15 @@ function getMovableWithoutPin(i, j, p)
 	{
 	  ni += dx;
 	  nj += dy;
-	  movable = addIfEmpty(m, ni, nj);
+	  movable = addIfEmpty([atk, all], ni, nj, board_);
 	}
-	addIfCapture(m, ni, nj, p.color);
+	addIfCapture([atk, all], ni, nj, p.color, board_);
       }
       
       if (p.type == BISHOP)
 	break;
     case ROOK:
-      for (let [dx, dy] of [[0,1], [0,-1], [1,0], [-1,0]])
+      for (let [dx, dy] of orthogs)
       {
         let movable = true;
 	let ni = i;
@@ -261,17 +341,95 @@ function getMovableWithoutPin(i, j, p)
 	{
 	  ni += dx;
 	  nj += dy;
-	  movable = addIfEmpty(m, ni, nj);
+	  movable = addIfEmpty([atk, all], ni, nj, board_);
 	}
-	addIfCapture(m, ni, nj, p.color);
+	addIfCapture([atk, all], ni, nj, p.color, board_);
       }
       break;
     case KING:
+      for (let [dx, dy] of diags.concat(orthogs) )
+      {
+	if (addIfEmpty([atk, all], i+dx, j+dy, board_) == false)
+	  addIfCapture([atk, all], i+dx, j+dy, p.color, board_);
+      }
+      // castle,              but not out of check
+      if (p.moved == false && inCheck(p.color, board_, true).length == 0)
+      {
+	// king-side
+	if (board_[j][5] === null && board_[j][6] === null
+	  && board_[j][7] !== null && board_[j][7].moved == false)
+	{
+	  let through = true
+	  for (let v of [5,6])
+	  {
+	    let tmp = copyBoard(board_);
+	    tmp[j][v] = board_[j][i];
+	    tmp[j][i] = null;
+	    if (inCheck(p.color, tmp).length > 0)
+	    {
+	      through = false;
+	      break;
+	    }
+	  }
+	  if (through == true)
+	    addIfEmpty([mov, all], 6, j, board_);
+	}
+	// king-side
+	if (board_[j][3] === null && board_[j][2] === null && board_[j][1] === null
+	  && board_[j][0] !== null && board_[j][0].moved == false)
+	{
+	  let through = true
+	  for (let v of [3,2])
+	  {
+	    let tmp = copyBoard(board_);
+	    tmp[j][v] = board_[j][i];
+	    tmp[j][i] = null;
+	    if (inCheck(p.color, tmp).length > 0)
+	    {
+	      through = false;
+	      break;
+	    }
+	  }
+	  if (through == true)
+	    addIfEmpty([mov, all], 2, j, board_);
+	}
+      }
       break;
-
-      
   }
-  return m;
+  return {mov:mov, atk:atk, all:all};
+}
+
+
+
+function inCheck(player, board_, ignoreKing = false)
+{
+  let enemy = -player;
+  let pking = null;
+  let epieces = [];
+  for (let i = 0; i < 8; ++i)
+  {
+    for (let j = 0; j < 8; ++j)
+    {
+      if (board_[j][i] !== null)
+      {
+	if (board_[j][i].color == enemy)
+	{
+	  if (ignoreKing == false || board_[j][i].type != KING)
+	    epieces.push([i,j])
+	}
+	else if (board_[j][i].type == KING && board_[j][i].color == player)
+	  pking = [i,j];
+      }
+    }
+  }
+  let attackers = [];
+  for (let [i,j] of epieces)
+  {
+    let m = getMovableWithoutPin(i, j, board_).atk;
+    if (coordInSet(m, ...pking))
+      attackers.push([i,j])
+  }
+  return attackers;
 }
 
 
@@ -292,36 +450,7 @@ const states = {
 
 function coordInSet(s, i, j)
 {
-  let c = [...s]
-  for (let [m, n] of c)
-  {
-    if (m == i && n == j)
-      return true;
-  }
-  return false;
-}
-
-function getColor(number)
-{
-  let a = null;
-  let b = null
-
-  if (number == 1)
-  {
-    a = WHITE;
-    b = "White";
-  }
-  else if (number == 2)
-  {
-    a = BLACK;
-    b = "Black";
-  }
-  else
-  {
-    a = 0;
-    b = "Spectating";
-  }
-  return [a,b];
+  return s.has(JSON.stringify([i,j]));
 }
 
 function click2board(i, j)
@@ -335,6 +464,8 @@ function click2board(i, j)
 }
 
 
+let users = []
+
 
 let color = null;
 let colorText = null;
@@ -346,6 +477,8 @@ let allowedMoves = null;
 
 window.onload = async () => {
 
+  document.getElementById("joincopy").textContent += "/join/"+id.toLowerCase();
+  document.getElementById("curRoom").textContent = "Current room: " + id;
 
   piece_imgs = await loadPieceImgs();
   board_bg = await loadImg("board.png");
@@ -353,21 +486,38 @@ window.onload = async () => {
 
   socket = io.connect(hostname);
   
-  socket.on("id", (e) => {
+  socket.emit("pair", {id:id, name:name});
 
-    [color, colorText] = getColor(e.number);
+  socket.on("users_update", (e) => {
 
-    socket.emit("board_request")
+    users = e.info;
+    color = users[e.i].team;
+
+    colorText = color2text[color];
+
     curState = states.TURNSTART;
-    document.getElementById("curRoom").textContent = "Current room: " + e.id;
+
     document.getElementById("colorText").textContent = "You are: " + colorText;
+
+    let maxlen = 0;
+    for (let i = 0; i < users.length; ++i)
+      if (users[i].length > maxlen)
+	maxlen = users[i].length;
+
+    let a2 = ["Users:"];
+
+    for (let i = 0; i < users.length; ++i)
+      a2.push(users[i].name+" ".repeat(maxlen - users[i].name.length + 4)+color2text[users[i].team]);
+    document.getElementById("userlist").textContent = a2.join("\r\n");
+    
+    socket.emit("board_request")
   });
   
   socket.on("board_update", (e) => {
 
     curGrid = e.board.grid;
     curTurn = e.board.turn;
-    console.log(color2text, curTurn);
+    
     document.getElementById("curTurn").textContent =  color2text[curTurn] + " to move.";
 
     drawBoard()
@@ -394,9 +544,17 @@ window.onload = async () => {
 	{
 	  socket.emit("make_move", {ini: curCoord, fin: [i,j]});
 	}
+	let ret = false
+	if (i == curCoord[0] && j == curCoord[1])
+	  ret = true;
+
 	curState = states.TURNSTART;
 	curCoord = null;
 	allowedMoves = null;
+
+	if (ret)
+	  return
+
       }
       if (curCoord === null)
       {
@@ -405,7 +563,8 @@ window.onload = async () => {
 	{
 	  if (p.color == color)
 	  {
-	    allowedMoves = selectPiece(i,j,p)
+	    allowedMoves = selectPiece(i,j,curGrid)
+
 	    curCoord = [i,j];
 	    if (curTurn == color)
 	      curState = states.PIECESELECTED;
