@@ -231,7 +231,10 @@ function selectPiece(i,j,board_)
 
 function addIfEmpty(m, i, j, board_)
 {
-  if (0 <= i && i < 8 && 0 <= j && j < 8 && board_[j][i] === null)
+  i = i % 9;
+  if (0 <= j && j < 8 && board_[j][i] === null)
+  // classic
+  //if (0 <= i && i < 8 && 0 <= j && j < 8 && board_[j][i] === null)
   {
     for (let s of m)
       s.add(JSON.stringify([i,j]));
@@ -242,7 +245,10 @@ function addIfEmpty(m, i, j, board_)
 
 function addIfCapture(m, i, j, color, board_)
 {
-  if (0 <= i && i < 8 && 0 <= j && j < 8 && board_[j][i] !== null && board_[j][i].color !== color)
+  i = i % 9;
+  if (0 <= j && j < 8 && board_[j][i] !== null && board_[j][i].color !== color)
+  // classic
+  //if (0 <= i && i < 8 && 0 <= j && j < 8 && board_[j][i] !== null && board_[j][i].color !== color)
   {
     for (let s of m)
       s.add(JSON.stringify([i,j]));
