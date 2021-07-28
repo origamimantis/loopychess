@@ -501,8 +501,8 @@ window.onload = async () => {
 
     let maxlen = 0;
     for (let i = 0; i < users.length; ++i)
-      if (users[i].length > maxlen)
-	maxlen = users[i].length;
+      if (users[i].name.length > maxlen)
+	maxlen = users[i].name.length;
 
     let a2 = ["Users:"];
 
