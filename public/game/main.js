@@ -246,7 +246,7 @@ function addIfEmpty(m, i, j, board_)
 
 function addIfCapture(m, i, j, color, board_)
 {
-  i = i % 8;
+  i = (i+8) % 8;
   console.log(i);
   if (0 <= j && j < 8 && board_[j][i] !== null && board_[j][i].color !== color)
   // classic
