@@ -223,6 +223,7 @@ io.on("connection", (socket)=>
 	collision.socket = socket;
 
       users_update(new_id);
+      socket.emit("paired", {});
     }
     
   });

@@ -637,7 +637,16 @@ window.onload = async () => {
 
   socket = io.connect(hostname);
   
+  await MusicPlayer.loadMusic();
   socket.emit("pair", {id:id, name:name});
+
+
+  socket.on("paired", async (e) => {
+
+    if (color == WHITE)
+      MusicPlayer.playbase();
+
+  });
 
   socket.on("users_update", (e) => {
 
@@ -673,6 +682,8 @@ window.onload = async () => {
     curGrid = e.board.grid;
     curTurn = e.board.turn;
 
+    MusicPlayer.playfx("move");
+
     clearCanvas();
     drawBoard();
     drawPieces(e.board.grid);
@@ -682,19 +693,52 @@ window.onload = async () => {
     mhe.scrollTop = mhe.scrollHeight;
 
     let hasmove = canMove(curTurn, curGrid);
+    let checked = inCheck(curTurn, curGrid).length > 0;
     if (hasmove == true)
     {
       document.getElementById("curTurn").textContent =  color2text[curTurn] + " to move.";
     }
     else
     {
-      let checked = inCheck(curTurn, curGrid).length > 0;
+      if (color==WHITE)
+	MusicPlayer.stop("base")
       if (checked == true)
+      {
 	document.getElementById("curTurn").textContent =  color2text[-curTurn] + " is victorious!";
+	if (color==WHITE)
+	{
+	if (color != curTurn)
+	  MusicPlayer.playfx("win");
+	else
+	  MusicPlayer.playfx("lose");
+	}
+      }
       else
+      {
 	document.getElementById("curTurn").textContent =  "Stalemate...";
+	if (color == WHITE)
+	  MusicPlayer.playfx("draw");
+      }
       gameOver = true;
       document.getElementById("downloadmoves").hidden = false;
+      return
+    }
+    let mechecked = inCheck(color, curGrid).length > 0;
+    let enchecked = inCheck(-color, curGrid).length > 0;
+    if (color == WHITE)
+    {
+      MusicPlayer.stoplayer("good")
+      MusicPlayer.stoplayer("bad")
+      if (mechecked)
+      {
+	MusicPlayer.playfx("checked");
+	MusicPlayer.playlayer("bad");
+      }
+      else if (enchecked)
+      {
+	MusicPlayer.playfx("checking");
+	MusicPlayer.playlayer("good");
+      }
     }
   });
 
@@ -732,37 +776,35 @@ window.onload = async () => {
 	      drawPromotionMenu(i);
 	      return;
 	    }
+	    let lastMove;
+	    if (piecemoved.type == KING && Math.abs(i-curCoord[0]) == 2)
+	    {
+	      if (i > curCoord[0])
+		lastMove = "0-0";
+	      else
+		lastMove = "0-0-0";
+	    }
 	    else
 	    {
-	      let lastMove;
-	      if (piecemoved.type == KING && Math.abs(i-curCoord[0]) == 2)
-	      {
-		if (i > curCoord[0])
-		  lastMove = "0-0";
-		else
-		  lastMove = "0-0-0";
-	      }
-	      else
-	      {
-		lastMove = notate[piecemoved.type] + toWritten(curCoord);
-		if (dest !== null)
-		  lastMove += "x";
-		lastMove += toWritten([i,j]);
+	      lastMove = notate[piecemoved.type] + toWritten(curCoord);
+	      if (dest !== null)
+		lastMove += "x";
+	      lastMove += toWritten([i,j]);
 
 
-		let next = copyBoard(curGrid);
-		next[j][i] = next[curCoord[1]][curCoord[0]];
-		next[curCoord[1]][curCoord[0]] = null;
-		let enemyCanMove = canMove(-curTurn, next);
-		let enemyChecked = inCheck(-curTurn, next).length > 0;
+	      let next = copyBoard(curGrid);
+	      next[j][i] = next[curCoord[1]][curCoord[0]];
+	      next[curCoord[1]][curCoord[0]] = null;
+	      let enemyCanMove = canMove(-curTurn, next);
+	      let enemyChecked = inCheck(-curTurn, next).length > 0;
 
-		if	(enemyCanMove && enemyChecked)
-		    lastMove += "+";
-		else if (enemyCanMove == false && enemyChecked)
-		    lastMove += "#";
-		else if (enemyCanMove == false && enemyChecked == false)
-		    lastMove += "sm"
-	      }
+	      if	(enemyCanMove && enemyChecked)
+		  lastMove += "+";
+	      else if (enemyCanMove == false && enemyChecked)
+		  lastMove += "#";
+	      else if (enemyCanMove == false && enemyChecked == false)
+		  lastMove += "sm"
+	      
 	      socket.emit("make_move", {ini: curCoord, fin: [i,j], note: lastMove});
 	    }
 	  }
@@ -810,7 +852,6 @@ window.onload = async () => {
 		lastMove += "#";
 	    else if (enemyCanMove == false && enemyChecked == false)
 		lastMove += "(stalemate xd)";
-
 
 	    socket.emit("make_move", {ini: curCoord, fin: promoteCoord, note: lastMove, promote: newpiece});
 	    promoting = false;
