@@ -643,8 +643,7 @@ window.onload = async () => {
 
   socket.on("paired", async (e) => {
 
-    if (color == WHITE)
-      MusicPlayer.playbase();
+    MusicPlayer.playbase();
 
   });
 
@@ -700,24 +699,19 @@ window.onload = async () => {
     }
     else
     {
-      if (color==WHITE)
-	MusicPlayer.stop("base")
+      MusicPlayer.stop("base")
       if (checked == true)
       {
 	document.getElementById("curTurn").textContent =  color2text[-curTurn] + " is victorious!";
-	if (color==WHITE)
-	{
 	if (color != curTurn)
 	  MusicPlayer.playfx("win");
 	else
 	  MusicPlayer.playfx("lose");
-	}
       }
       else
       {
 	document.getElementById("curTurn").textContent =  "Stalemate...";
-	if (color == WHITE)
-	  MusicPlayer.playfx("draw");
+	MusicPlayer.playfx("draw");
       }
       gameOver = true;
       document.getElementById("downloadmoves").hidden = false;
@@ -725,20 +719,18 @@ window.onload = async () => {
     }
     let mechecked = inCheck(color, curGrid).length > 0;
     let enchecked = inCheck(-color, curGrid).length > 0;
-    if (color == WHITE)
+
+    MusicPlayer.stoplayer("good")
+    MusicPlayer.stoplayer("bad")
+    if (mechecked)
     {
-      MusicPlayer.stoplayer("good")
-      MusicPlayer.stoplayer("bad")
-      if (mechecked)
-      {
-	MusicPlayer.playfx("checked");
-	MusicPlayer.playlayer("bad");
-      }
-      else if (enchecked)
-      {
-	MusicPlayer.playfx("checking");
-	MusicPlayer.playlayer("good");
-      }
+      MusicPlayer.playfx("checked");
+      MusicPlayer.playlayer("bad");
+    }
+    else if (enchecked)
+    {
+      MusicPlayer.playfx("checking");
+      MusicPlayer.playlayer("good");
     }
   });
 
