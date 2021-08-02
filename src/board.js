@@ -10,6 +10,7 @@ const WHITE = 1;
 const BLACK = -1;
 const SPECTatinG = 0;
 
+const number2letter = "_ABCDEFGH"
 const A = 1;
 const B = 2;
 const C = 3;
@@ -18,8 +19,6 @@ const E = 5;
 const F = 6;
 const G = 7;
 const H = 8;
-
-
 
 
 class Board
@@ -69,6 +68,7 @@ class Board
     if (p.moved == false)
       p.moved = true;
     
+
     this.clearEnPassant()
     if (p.type == PAWN)
     {

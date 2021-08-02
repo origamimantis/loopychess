@@ -11,6 +11,7 @@
 	}
 	button{
 		position:relative;
+			z-index:1;
 	}
 	body{ font-family: 'Courier New', monospace; }
     </style>
@@ -19,20 +20,23 @@
 	  <div id="host" hostname="https://foonkychess.herokuapp.com"></div>
 	  <!--div id="host" hostname="http://localhost:4445"></div--!>
 	  <div id="canvases"></div>
-          <p id="curRoom" >Current room:</p>
-          <p id="colorText" >You are:</p>
-          <p id="curTurn" >??? to move.</p>
-	  <p id="jointext" >Join link:</p>
-	  <button id = "joincopy" >foonkychess.herokuapp.com</button>
-	  <p id="userlist" style="white-space: pre"></p>
-          <script>
-            document.getElementById("curRoom").style["margin-left"]= "640px"
-            document.getElementById("colorText").style["margin-left"]= "640px"
-            document.getElementById("curTurn").style["margin-left"]= "640px"
-            document.getElementById("jointext").style["margin-left"]= "640px"
-            document.getElementById("joincopy").style["margin-left"]= "640px"
-            document.getElementById("userlist").style["margin-left"]= "640px"
-    </script>
+	  <div id="aligner" style="margin-left: 640px">
+		  <div id="texts" style="pointer-events:none">
+		  <p id="curRoom" >Current room:</p>
+		  <p id="colorText" >You are:</p>
+		  <p id="curTurn" >??? to move.</p>
+		  <p id="jointext" >Join link:</p>
+		  </div>
+
+		  <button id = "joincopy" >foonkychess.herokuapp.com</button>
+
+		  <div id="moretexts" style="pointer-events:none">
+		  <p id="userlist" style="white-space: pre" margin-left = "640px"></p>
+		  <div id="movehistory" style="white-space: pre; height:180px;width:260px;border:1px solid black;overflow-y:scroll;"></div>
+		  </div>
+
+		  <button hidden id = "downloadmoves" style="width:240px">Download moves</button>
+	  </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="main.js"></script>

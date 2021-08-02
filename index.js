@@ -158,15 +158,6 @@ function users_update(id)
   }
 }
 
-let notate = {};
-notate[c.PAWN] = "";
-notate[c.KNIGHT] = "N";
-notate[c.BISHOP] = "B";
-notate[c.ROOK] = "R";
-notate[c.QUEEN] = "Q";
-notate[c.KING] = "K";
-
-
 io.on("connection", (socket)=>
 {
 
@@ -175,7 +166,8 @@ io.on("connection", (socket)=>
   });
 
   socket.on('board_request',(data)=> {
-    socket.emit("board_update", {board : rooms[socket.pairId].board});
+    let r = rooms[socket.pairId];
+    socket.emit("board_update", {board : r.board, moves: r.moves});
   });
 
   socket.on('make_move',(data)=> {
@@ -185,10 +177,11 @@ io.on("connection", (socket)=>
     if (data.promote)
       r.board.promote(data.fin, data.promote);
 
+    r.moves.push(data.note);
     for (u of r.users)
     {
       if (u.socket !== null)
-	u.socket.emit("board_update", {board : r.board});
+	u.socket.emit("board_update", {board : r.board, moves : r.moves});
     }
   });
 

@@ -501,8 +501,6 @@ function inCheck(player, board_, ignoreKing = false)
 
 
 
-let getMethods = (obj) => Object.getOwnPropertyNames(obj).filter(item => typeof obj[item] === 'function')
-
 let curGrid = null;
 
 const states = {
@@ -512,6 +510,13 @@ const states = {
   OVER: 3
 }
 
+let notate = {};
+notate[PAWN] = "";
+notate[KNIGHT] = "N";
+notate[BISHOP] = "B";
+notate[ROOK] = "R";
+notate[QUEEN] = "Q";
+notate[KING] = "K";
 
 function coordInSet(s, i, j)
 {
@@ -568,6 +573,40 @@ function invert(img)
   })
 }
 */
+function toWritten(c)
+{
+  let [i,j] = c;
+  return number2letter[i+1].toLowerCase() + (j+1).toString();
+}
+
+
+// each move maxlen 7, will make 12
+function formatMoves(moves)
+{
+  let moves2 = [];
+  let s = 2;
+  for (let m of moves)
+  {
+    if (s >= 2)
+    {
+      moves2.push([]);
+      s = 0;
+    }
+    moves2[moves2.length-1].push(m);    s += 1;
+  }
+  for (let i = 0; i < moves2.length; ++i)
+  {
+    if (moves2[i].length == 2)
+      moves2[i] = moves2[i][0]+ " ".repeat(10-moves2[i][0].length) + moves2[i][1];
+    else
+      moves2[i] = moves2[i][0];
+    let num = (i+1).toString() + ".";
+    moves2[i] = num + " ".repeat(6-num.length) + moves2[i];
+  }
+  return moves2.join("\r\n");
+}
+
+
 
 let users = []
 
@@ -629,6 +668,10 @@ window.onload = async () => {
     clearCanvas();
     drawBoard();
     drawPieces(e.board.grid);
+    
+    let mhe = document.getElementById("movehistory");
+    mhe.textContent = formatMoves(e.moves);
+    mhe.scrollTop = mhe.scrollHeight;
 
     let hasmove = canMove(curTurn, curGrid);
     if (hasmove == true)
@@ -643,6 +686,7 @@ window.onload = async () => {
       else
 	document.getElementById("curTurn").textContent =  "Stalemate...";
       gameOver = true;
+      document.getElementById("downloadmoves").hidden = false;
     }
   });
 
@@ -669,6 +713,7 @@ window.onload = async () => {
 	  if (color == curTurn && coordInSet(allowedMoves, i, j))
 	  {
 	    let piecemoved = curGrid[curCoord[1]][curCoord[0]];
+	    let dest = curGrid[j][i];
 
 	    if (piecemoved.type == PAWN &&
 	      ( (color == BLACK && j == 0) || (color == WHITE && j == 7) ) )
@@ -681,7 +726,36 @@ window.onload = async () => {
 	    }
 	    else
 	    {
-	      socket.emit("make_move", {ini: curCoord, fin: [i,j]});
+	      let lastMove;
+	      if (piecemoved.type == KING && Math.abs(i-curCoord[0]) == 2)
+	      {
+		if (i > curCoord[0])
+		  lastMove = "0-0";
+		else
+		  lastMove = "0-0-0";
+	      }
+	      else
+	      {
+		lastMove = notate[piecemoved.type] + toWritten(curCoord);
+		if (dest !== null)
+		  lastMove += "x";
+		lastMove += toWritten([i,j]);
+
+
+		let next = copyBoard(curGrid);
+		next[j][i] = next[curCoord[1]][curCoord[0]];
+		next[curCoord[1]][curCoord[0]] = null;
+		let enemyCanMove = canMove(-curTurn, next);
+		let enemyChecked = inCheck(-curTurn, next).length > 0;
+
+		if	(enemyCanMove && enemyChecked)
+		    lastMove += "+";
+		else if (enemyCanMove == false && enemyChecked)
+		    lastMove += "#";
+		else if (enemyCanMove == false && enemyChecked == false)
+		    lastMove += "sm"
+	      }
+	      socket.emit("make_move", {ini: curCoord, fin: [i,j], note: lastMove});
 	    }
 	  }
 	  let ret = false
@@ -707,7 +781,30 @@ window.onload = async () => {
 	  else
 	  {
 	    let newpiece = promotionChoices[Math.abs(j - promoteCoord[1])]
-	    socket.emit("make_move", {ini: curCoord, fin: promoteCoord, promote: newpiece});
+	    let lastMove;
+
+	    lastMove = toWritten(curCoord);
+	    lastMove += (curGrid[promoteCoord[1]][promoteCoord[0]] === null)? " ":"x";
+	    lastMove += toWritten(promoteCoord);
+	    lastMove += "=" + notate[newpiece];
+
+	    let next = copyBoard(curGrid);
+	    next[promoteCoord[1]][promoteCoord[0]] = next[curCoord[1]][curCoord[0]];
+	    next[curCoord[1]][curCoord[0]] = null;
+	    next[promoteCoord[1]][promoteCoord[0]].type = newpiece;
+
+	    let enemyCanMove = canMove(-curTurn, next);
+	    let enemyChecked = inCheck(-curTurn, next).length > 0;
+
+	    if	    (enemyCanMove && enemyChecked)
+		lastMove += "+";
+	    else if (enemyCanMove == false && enemyChecked)
+		lastMove += "#";
+	    else if (enemyCanMove == false && enemyChecked == false)
+		lastMove += "(stalemate xd)";
+
+
+	    socket.emit("make_move", {ini: curCoord, fin: promoteCoord, note: lastMove, promote: newpiece});
 	    promoting = false;
 	    promoteCoord = null;
 	  }
