@@ -29,14 +29,6 @@ class Board
     this.turn = WHITE;
     this.initializeBoard();
     this.initializePieces();
-
-    /*
-    this.addPiece(D, 1, QUEEN, WHITE);
-    this.addPiece(D, 8, QUEEN, BLACK);
-
-    this.addPiece(E, 1, KING, WHITE);
-    this.addPiece(E, 8, KING, BLACK);
-    */
   }
   initializeBoard()
   {
@@ -54,6 +46,11 @@ class Board
   getPiece(c1, c2)
   {
     return this.grid[c2-1][c1-1];
+  }
+  promote(piece, newtype)
+  {
+    let [i1,j1] = piece;
+    this.grid[j1][i1].type = newtype;
   }
   makeMove(start, end)
   {

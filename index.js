@@ -60,6 +60,7 @@ class Room
   {
     this.board = new b.Board();
     this.users = []
+    this.moves = []
     this.id = id;
   }
   getUserByName(name)
@@ -157,6 +158,14 @@ function users_update(id)
   }
 }
 
+let notate = {};
+notate[c.PAWN] = "";
+notate[c.KNIGHT] = "N";
+notate[c.BISHOP] = "B";
+notate[c.ROOK] = "R";
+notate[c.QUEEN] = "Q";
+notate[c.KING] = "K";
+
 
 io.on("connection", (socket)=>
 {
@@ -172,6 +181,10 @@ io.on("connection", (socket)=>
   socket.on('make_move',(data)=> {
     let r = rooms[socket.pairId];
     r.board.makeMove(data.ini, data.fin);
+
+    if (data.promote)
+      r.board.promote(data.fin, data.promote);
+
     for (u of r.users)
     {
       if (u.socket !== null)

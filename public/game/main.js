@@ -35,8 +35,8 @@ function debug(stuff)
 
 const NUMLAYER = 3;
 
-const BOARD_LEFT = 0;
-const BOARD_TOP  = 0;
+const BOARD_LEFT = 32;
+const BOARD_TOP  = 32;
 
 
 const PAWN = "pawn";
@@ -53,6 +53,7 @@ let color2text = {0:"Spectating"};
 color2text[WHITE] = "White";
 color2text[BLACK] = "Black";
 
+const number2letter = "_ABCDEFGH";
 const A = 1;
 const B = 2;
 const C = 3;
@@ -82,8 +83,10 @@ for (let i = 0; i < NUMLAYER; i++)
   ctx[i].fillStyle = "blue";
   ctx[i].textBaseline = "top";
   ctx[i].textAlign = "center";
+  ctx[i].font = "20px Courier New, monospace";
+  ctx[i].textBaseline = "middle"
+  //ctx[i].textAlign = "center"
 }
-ctx[2].font = "20px arial";
 
 function loadImg(fname)
 {
@@ -129,7 +132,7 @@ function drawText(l, text, x, y, maxWidth = undefined)
 function drawCircle(l, x, y, radius, fill = false, stroke=true, strokeWidth=4)
 {
   ctx[l].beginPath()
-  ctx[l].arc(x, y, radius, 0, 2 * Math.PI, false)
+  ctx[l].arc(x + 32, y + 32, radius, 0, 2 * Math.PI, false)
   if (fill)
   {
     ctx[l].fillStyle = fill
@@ -146,10 +149,28 @@ function drawCircle(l, x, y, radius, fill = false, stroke=true, strokeWidth=4)
 let board_bg = null;
 let piece_imgs = null;
 
+
+function clearCanvas()
+{
+  for (let i = 0; i < NUMLAYER; i++)
+    ctx[i].clearRect(0,0,760, 640)
+}
 function drawBoard()
 {
   ctx[0].drawImage(board_bg, BOARD_LEFT, BOARD_TOP);
-  
+  ctx[0].fillStyle = "black";
+  for (let i = 0; i < 8; ++i)
+  {
+    drawText(0, number2letter[i+1], ...idx2board(i + 0.5,  7.25, true))
+    drawText(0, number2letter[i+1], ...idx2board(i + 0.5, -1.25, true))
+
+    drawText(0, i+1, ...idx2board( 8.25, i - 0.5, true))
+    drawText(0, i+1, ...idx2board(-0.25, i - 0.5, true))
+  }
+}
+function erasePiece(i,j)
+{
+  ctx[1].clearRect(...idx2board(i,j), 64,64);
 }
 function drawPieces(grid)
 {
@@ -162,29 +183,41 @@ function drawPieces(grid)
       let p = grid[j][i];
       if (p === null)
 	continue
-      if (color == BLACK)
-	ctx[1].drawImage(piece_imgs[p.type + "_" + (p.color == BLACK ? "b" : "w")], ...idx2board(7-i-0.5,8-j-0.5));
-      else
-	ctx[1].drawImage(piece_imgs[p.type + "_" + (p.color == BLACK ? "b" : "w")], ...idx2board(i-0.5,j+0.5));
+      let ext = "_" + (p.color == BLACK ? "b" : "w");
+      ctx[1].drawImage(piece_imgs[p.type + ext], ...idx2board(i,j));
     }
   }
   let attackers = inCheck(color, grid);
   
   attackers.forEach( (v) => 
     {
-      let v2 = [...v]
-      if (color == BLACK)
-      {
-	v2[0] = 7-v2[0];
-	v2[1] = 7-v2[1];
-      }
-      drawCircle(1, ...idx2board(...v2), 24, false, "red");
+      drawCircle(1, ...idx2board(...v), 24, false, "red");
     });
 }
 
-function idx2board(i, j)
+function drawPromotionMenu(i)
 {
-  return [BOARD_LEFT + i*64 + 32, BOARD_TOP + (8-j)*64 - 32];
+  let ext = "_" + (color == BLACK ? "b" : "w");
+  ctx[2].fillStyle = "blue";
+  ctx[2].fillRect(...idx2board(i,7), 64, 256);
+  for (let j = 0; j < 4; ++j)
+  {
+    ctx[2].drawImage(piece_imgs[promotionChoices[j] + ext], ...idx2board(i,7-j));
+  }
+}
+
+function idx2board(i, j, ignorecolor = false)
+{
+  if (ignorecolor == false && color == BLACK)
+  {
+    i = 7-i;
+    j = 7-j;
+  }
+  i -= 0.5;
+  j -= 0.5;
+  let x = BOARD_LEFT + i*64 + 32;
+  let y = BOARD_TOP + (7-j)*64 - 32;
+  return [x,y]
 }
 function board2idx(x, y)
 {
@@ -194,36 +227,24 @@ function board2idx(x, y)
 function selectPiece(i,j,board_)
 {
   let p = board_[j][i];
-  ctx[2].fillText(p.type, 600, 256)
 
-  let m = getMovableWithoutPin(i, j, board_).all;
+  let m = getMovable(i, j, board_).all;
   
-  let marray = Array.from(m);
-  for (let c of marray)
-  {
-    let [i1,j1] = JSON.parse(c);
-    let ifMoved = copyBoard(board_);
-    ifMoved[j1][i1] = ifMoved[j][i];
-    ifMoved[j][i] = null;
-    if (inCheck(p.color, ifMoved).length > 0)
-      m.delete(c)
-  }
-
-
   m.forEach( (v) => 
     {
-      let v2 = [...JSON.parse(v)]
-      if (color == BLACK)
+      let [i,j] = JSON.parse(v);
+      if (board_[j][i] === null)
       {
-	v2[0] = 7-v2[0];
-	v2[1] = 7-v2[1];
+	ctx[2].globalAlpha = 0.3;
+	drawCircle(2, ...idx2board(i,j), 10, "black", false);
       }
-      drawCircle(2, ...idx2board(...v2), 30);
+      else
+      {
+	ctx[2].globalAlpha = 0.5;
+	drawCircle(2, ...idx2board(i,j), 30);
+      }
     });
-  
-
-
-
+  ctx[2].globalAlpha = 1;
 
   return m;
 }
@@ -265,6 +286,27 @@ function copyBoard(board_)
 
 let diags = [[1,1], [1,-1], [-1,1], [-1,-1]];
 let orthogs = [[0,1], [0,-1], [1,0], [-1,0]];
+
+function getMovable(i,j,board_)
+{
+  let m = getMovableWithoutPin(i, j, board_);
+  
+  let marray = Array.from(m.all);
+  for (let c of marray)
+  {
+    let [i1,j1] = JSON.parse(c);
+    let ifMoved = copyBoard(board_);
+    ifMoved[j1][i1] = ifMoved[j][i];
+    ifMoved[j][i] = null;
+    if (inCheck(board_[j][i].color, ifMoved).length > 0)
+    {
+      m.all.delete(c);
+      m.atk.delete(c);
+      m.mov.delete(c);
+    }
+  }
+  return m;
+}
 
 
 function getMovableWithoutPin(i, j, board_)
@@ -406,6 +448,23 @@ function getMovableWithoutPin(i, j, board_)
 }
 
 
+function canMove(player, board_)
+{
+  for (let i = 0; i < 8; ++i)
+  {
+    for (let j = 0; j < 8; ++j)
+    {
+      let p = board_[j][i];
+      if (p !== null && p.color == player)
+      {
+	let m = getMovable(i,j,board_).all;
+	if (m.size > 0)
+	  return true;
+      }
+    }
+  }
+  return false;
+}
 
 function inCheck(player, board_, ignoreKing = false)
 {
@@ -469,6 +528,46 @@ function click2board(i, j)
     return [i,j];
 }
 
+/*
+function invert(img)
+{
+  return new Promise( (resolve) =>
+  {
+    let can = document.createElement("canvas");
+    let ctx = can.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+
+    let w = img.width;
+    let h = img.height;
+
+    can.width = w;
+    can.height = h;
+
+    ctx.drawImage(img, 0, 0, w, h);
+
+    let imageData = ctx.getImageData(0, 0, w, h);
+
+    for (let i = 0; i < imageData.data.length; i += 4)
+    {
+      let slice = imageData.data.slice(i, i+4);
+      if (slice[3] == 255)
+      {
+	slice[0] = 255-slice[0];
+	slice[1] = 255-slice[1];
+	slice[2] = 255-slice[2];
+      }
+      imageData.data.set(slice, i);
+    }
+
+    ctx.putImageData(imageData,0,0);
+
+    let nImg = new Image();
+    nImg.src = can.toDataURL('image/png');
+
+    nImg.onload = ()=>{resolve(nImg)};
+  })
+}
+*/
 
 let users = []
 
@@ -476,10 +575,15 @@ let users = []
 let color = null;
 let colorText = null;
 
-let curState = states.WAITING;
+let promoting = false;
+let promoteCoord = null;
 let curCoord = null;
 let curTurn = null;
 let allowedMoves = null;
+
+let gameOver = false;
+
+const promotionChoices = [QUEEN, KNIGHT, ROOK, BISHOP];
 
 window.onload = async () => {
 
@@ -501,8 +605,6 @@ window.onload = async () => {
 
     colorText = color2text[color];
 
-    curState = states.TURNSTART;
-
     document.getElementById("colorText").textContent = "You are: " + colorText;
 
     let maxlen = 0;
@@ -523,12 +625,25 @@ window.onload = async () => {
 
     curGrid = e.board.grid;
     curTurn = e.board.turn;
-    
-    document.getElementById("curTurn").textContent =  color2text[curTurn] + " to move.";
 
-    drawBoard()
-    drawPieces(e.board.grid)
-    curState = states.TURNSTART;
+    clearCanvas();
+    drawBoard();
+    drawPieces(e.board.grid);
+
+    let hasmove = canMove(curTurn, curGrid);
+    if (hasmove == true)
+    {
+      document.getElementById("curTurn").textContent =  color2text[curTurn] + " to move.";
+    }
+    else
+    {
+      let checked = inCheck(curTurn, curGrid).length > 0;
+      if (checked == true)
+	document.getElementById("curTurn").textContent =  color2text[-curTurn] + " is victorious!";
+      else
+	document.getElementById("curTurn").textContent =  "Stalemate...";
+      gameOver = true;
+    }
   });
 
   window.onmousedown = (e) => {
@@ -536,30 +651,68 @@ window.onload = async () => {
     if (e.which != 1)
       return
 
+    if (gameOver)
+      return;
+
     let [i, j] = board2idx(e.offsetX, e.offsetY);
     
-    ctx[2].clearRect(0,0,760, 640)
-
     if (0 <= i && i < 8 && 0 <= j && j < 8)
     {
       [i,j] = click2board(i,j);
       // clicked inside the board
       if (curCoord !== null)
       {
-	if (color == curTurn && coordInSet(allowedMoves, i, j))
+
+	if (promoting == false)
 	{
-	  socket.emit("make_move", {ini: curCoord, fin: [i,j]});
+	  ctx[2].clearRect(0,0,760, 640)
+	  if (color == curTurn && coordInSet(allowedMoves, i, j))
+	  {
+	    let piecemoved = curGrid[curCoord[1]][curCoord[0]];
+
+	    if (piecemoved.type == PAWN &&
+	      ( (color == BLACK && j == 0) || (color == WHITE && j == 7) ) )
+	    {
+	      promoting = true;
+	      promoteCoord = [i,j];
+	      erasePiece(...curCoord);
+	      drawPromotionMenu(i);
+	      return;
+	    }
+	    else
+	    {
+	      socket.emit("make_move", {ini: curCoord, fin: [i,j]});
+	    }
+	  }
+	  let ret = false
+	  if (i == curCoord[0] && j == curCoord[1])
+	    ret = true;
+
+	  curCoord = null;
+	  allowedMoves = null;
+
+	  if (ret)
+	    return
 	}
-	let ret = false
-	if (i == curCoord[0] && j == curCoord[1])
-	  ret = true;
+	else if (promoting == true)
+	{
+	  // queen, knight, rook, bishop seems to be the order on chess.com and lichess
 
-	curState = states.TURNSTART;
-	curCoord = null;
-	allowedMoves = null;
+	  if (i != promoteCoord[0] || Math.abs(j-promoteCoord[1]) > 3 )
+	  {
+	    // did not click inside menu, but do not let them cancel the promotion
+	    // hehehehehhe
+	    return
+	  }
+	  else
+	  {
+	    let newpiece = promotionChoices[Math.abs(j - promoteCoord[1])]
+	    socket.emit("make_move", {ini: curCoord, fin: promoteCoord, promote: newpiece});
+	    promoting = false;
+	    promoteCoord = null;
+	  }
 
-	if (ret)
-	  return
+	}
 
       }
       if (curCoord === null)
@@ -571,9 +724,8 @@ window.onload = async () => {
 	  {
 	    allowedMoves = selectPiece(i,j,curGrid)
 
-	    curCoord = [i,j];
-	    if (curTurn == color)
-	      curState = states.PIECESELECTED;
+	    if (allowedMoves.size > 0)
+	      curCoord = [i,j];
 	  }
 	}
 	else
