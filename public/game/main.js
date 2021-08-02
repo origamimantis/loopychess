@@ -22,8 +22,6 @@ if (searchParams.has("name") === false)
 
 let name = searchParams.get("name");
 
-console.log(name);
-
 
 let socket;
 
@@ -161,11 +159,15 @@ function drawBoard()
   ctx[0].fillStyle = "black";
   for (let i = 0; i < 8; ++i)
   {
-    drawText(0, number2letter[i+1], ...idx2board(i + 0.5,  7.25, true))
-    drawText(0, number2letter[i+1], ...idx2board(i + 0.5, -1.25, true))
+    let l = i;
+    if (color == BLACK)
+      l = 7-l;
+    l += 1;
+    drawText(0, number2letter[l], ...idx2board(i + 0.5,  7.25, true))
+    drawText(0, number2letter[l], ...idx2board(i + 0.5, -1.25, true))
 
-    drawText(0, i+1, ...idx2board( 8.25, i - 0.5, true))
-    drawText(0, i+1, ...idx2board(-0.25, i - 0.5, true))
+    drawText(0, l, ...idx2board( 8.25, i - 0.5, true))
+    drawText(0, l, ...idx2board(-0.25, i - 0.5, true))
   }
 }
 function erasePiece(i,j)
@@ -656,6 +658,12 @@ window.onload = async () => {
     for (let i = 0; i < users.length; ++i)
       a2.push(users[i].name+" ".repeat(maxlen - users[i].name.length + 4)+color2text[users[i].team]);
     document.getElementById("userlist").textContent = a2.join("\r\n");
+    
+    let h = document.getElementById("hiddenplayers");
+    if (users.length >= 2 && h.textContent.length == 0)
+    {
+      h.textContent = a2[1]+"\r\n"+a2[2];
+    }
     
     socket.emit("board_request")
   });

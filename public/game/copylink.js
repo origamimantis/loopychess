@@ -32,10 +32,10 @@ c.addEventListener('click', (e) =>
 {
   e.preventDefault();
 
-  let u = document.getElementById('userlist').textContent;
+  let u = document.getElementById('hiddenplayers').textContent;
   u = u.split("\r\n");
-  let white = u[1].split(" ")[0];
-  let black = u[2].split(" ")[0];
+  let white = u[0].split(" ")[0];
+  let black = u[1].split(" ")[0];
   
   let headers = []
   let d = new Date();
