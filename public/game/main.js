@@ -1,8 +1,11 @@
 'use strict';
 
+
+
 let realurl = window.location.href;
 
-let hostname = document.getElementById("host").getAttribute("hostname");
+let a = realurl.split("/");
+let hostname = a[0] + "//" + a[2];
 
 // url parsing
 
@@ -628,6 +631,7 @@ const promotionChoices = [QUEEN, KNIGHT, ROOK, BISHOP];
 
 window.onload = async () => {
 
+  let mload = MusicPlayer.loadMusic();
   document.getElementById("joincopy").textContent += "/join/"+id.toLowerCase();
   document.getElementById("curRoom").textContent = "Current room: " + id;
 
@@ -637,7 +641,7 @@ window.onload = async () => {
 
   socket = io.connect(hostname);
   
-  await MusicPlayer.loadMusic();
+  await mload;
   socket.emit("pair", {id:id, name:name});
 
 
@@ -720,17 +724,23 @@ window.onload = async () => {
     let mechecked = inCheck(color, curGrid).length > 0;
     let enchecked = inCheck(-color, curGrid).length > 0;
 
-    MusicPlayer.stoplayer("good")
-    MusicPlayer.stoplayer("bad")
     if (mechecked)
     {
-      MusicPlayer.playfx("checked");
       MusicPlayer.playlayer("bad");
+      MusicPlayer.playfx("checked");
     }
-    else if (enchecked)
+    else
     {
-      MusicPlayer.playfx("checking");
+      MusicPlayer.stoplayer("bad")
+    }
+    if (enchecked)
+    {
       MusicPlayer.playlayer("good");
+      MusicPlayer.playfx("checking");
+    }
+    else
+    {
+      MusicPlayer.stoplayer("good")
     }
   });
 

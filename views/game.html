@@ -13,14 +13,17 @@
 		position:relative;
 			z-index:1;
 	}
+	input{
+		position:relative;
+			z-index:1;
+	}
 	body{ font-family: 'Courier New', monospace; }
     </style>
   </head>
   <body>
-	  <div id="host" hostname="https://foonkychess.herokuapp.com"></div>
-	  <!--div id="host" hostname="http://localhost:4445"></div--!>
 	  <div id="canvases"></div>
 	  <div id="aligner" style="margin-left: 640px">
+		  Music<input type="checkbox" id="musictoggle"></input>
 		  <div id="texts" style="pointer-events:none">
 		  <p id="curRoom" >Current room:</p>
 		  <p id="colorText" >You are:</p>

@@ -22,15 +22,12 @@ class MusicPlayer
 {
   static async loadMusic()
   {
+    Howler.mute(true);
     this.album = {};
     // load(name, length, introLength)
-    console.log(0)
     await this.load("good", 8000);
-    console.log(1)
     await this.load("base", 8000);
-    console.log(2)
     await this.load("bad", 8000);
-    console.log(3)
 
     await this.loadFX("win", 2000);
     await this.loadFX("lose", 2000);
@@ -84,25 +81,22 @@ class MusicPlayer
   static playbase()
   {
     this.baseid = this.play("base");
+    this.play("good");
+    this.album["good"].volume(0);
+    this.play("bad");
+    this.album["bad"].volume(0);
   }
   static playlayer( name )
   {
     if (name == "base")
       return
 
-    let id = this.play(name);
-    this.mute(name)
-
-    let time = this.album["base"].seek(this.baseid);
-    this.album[name].seek(time, id);
-
     this.album["base"].volume(0.3);
     this.album[name].volume(0.3);
-    this.unmute(name)
   }
   static stoplayer(name)
   {
-    this.stop(name)
+    this.album[name].volume(0);
     this.album["base"].volume(0.4);
   }
 

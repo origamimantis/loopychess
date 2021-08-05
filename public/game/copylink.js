@@ -74,3 +74,10 @@ c.addEventListener('click', (e) =>
   dummy.remove();
 
 });
+
+
+let m = document.getElementById('musictoggle');
+
+m.addEventListener('click', (e) => {
+    Howler.mute(!m.checked);
+});
