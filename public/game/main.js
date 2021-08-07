@@ -792,23 +792,22 @@ window.onload = async () => {
 	      if (dest !== null)
 		lastMove += "x";
 	      lastMove += toWritten([i,j]);
-
-
-	      let next = copyBoard(curGrid);
-	      next[j][i] = next[curCoord[1]][curCoord[0]];
-	      next[curCoord[1]][curCoord[0]] = null;
-	      let enemyCanMove = canMove(-curTurn, next);
-	      let enemyChecked = inCheck(-curTurn, next).length > 0;
-
-	      if	(enemyCanMove && enemyChecked)
-		  lastMove += "+";
-	      else if (enemyCanMove == false && enemyChecked)
-		  lastMove += "#";
-	      else if (enemyCanMove == false && enemyChecked == false)
-		  lastMove += "sm"
-	      
-	      socket.emit("make_move", {ini: curCoord, fin: [i,j], note: lastMove});
 	    }
+
+	    let next = copyBoard(curGrid);
+	    next[j][i] = next[curCoord[1]][curCoord[0]];
+	    next[curCoord[1]][curCoord[0]] = null;
+	    let enemyCanMove = canMove(-curTurn, next);
+	    let enemyChecked = inCheck(-curTurn, next).length > 0;
+
+	    if	(enemyCanMove && enemyChecked)
+		lastMove += "+";
+	    else if (enemyCanMove == false && enemyChecked)
+		lastMove += "#";
+	    else if (enemyCanMove == false && enemyChecked == false)
+		lastMove += "sm"
+	    
+	    socket.emit("make_move", {ini: curCoord, fin: [i,j], note: lastMove});
 	  }
 	  let ret = false
 	  if (i == curCoord[0] && j == curCoord[1])
