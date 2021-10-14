@@ -5,7 +5,7 @@
 let realurl = window.location.href;
 
 let a = realurl.split("/");
-let hostname = a[0] + "//" + a[2];
+let hostname = "https://foonkychess.herokuapp.com"
 
 // url parsing
 
@@ -21,7 +21,7 @@ path = path.split("/");
 let id = path[path.length-1];
 
 if (searchParams.has("name") === false)
-  window.location.replace("/join/"+id);
+  window.location.replace("/loopychess/join/"+id);
 
 let name = searchParams.get("name");
 
