@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<!-- boilerplated from https://socket.io/get-started/chat -->
+<html>
+  <head>
+    <title>Foonky Chess</title>
+    <link rel="icon" href="favicon.ico">
+    <style>
+	img {
+	  pointer-events: none;
+	  user-select: none;
+	}
+	button{
+		position:relative;
+			z-index:1;
+	}
+	input{
+		position:relative;
+			z-index:1;
+	}
+	body{ font-family: 'Courier New', monospace; }
+    </style>
+  </head>
+  <body>
+	  <div id="canvases"></div>
+	  <div id="aligner" style="margin-left: 640px">
+		  Music<input type="checkbox" id="musictoggle"></input>
+		  <div id="texts" style="pointer-events:none">
+		  <p id="curRoom" >Current room:</p>
+		  <p id="colorText" >You are:</p>
+		  <p id="curTurn" >??? to move.</p>
+		  <p id="jointext" >Join link:</p>
+		  </div>
+
+		  <button id = "joincopy" >foonkychess.herokuapp.com</button>
+
+		  <div id="moretexts" style="pointer-events:none">
+		  <p id="userlist" style="white-space: pre" margin-left = "640px"></p>
+		  <p hidden id="hiddenplayers" style="white-space: pre" ></p>
+		  </div>
+		  <div id="movehistory" style="white-space: pre; height:180px;width:260px;border:1px solid black;overflow-y:scroll;"></div>
+
+		  <button hidden id = "downloadmoves" style="width:260px">Download moves</button>
+	  </div>
+
+    <script src="main.js"></script>
+    <script src="copylink.js"></script>
+		<script src="music.js"></script>
+
+    <script src="../lib/socket.io.min.js"></script>
+		<script src="../lib/howler.core.min.js"></script>
+
+  </body>
+</html>
