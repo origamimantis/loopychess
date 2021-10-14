@@ -1,6 +1,6 @@
 'use strict';
 
-const EXT = ".wav";
+const EXT = ".mp3";
 
 /*
 play( name )
