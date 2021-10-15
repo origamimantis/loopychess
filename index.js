@@ -6,7 +6,7 @@ let port = process.env.PORT;
 if (process.argv[2] == "test")
   port = 4445;
 
-app.use(express.static(__dirname + "/views/src"));
+app.use(express.static(__dirname + "/views"));
 
 const an_re = "[A-Za-z0-9]"
 
