@@ -17,13 +17,13 @@ let searchParams = new URLSearchParams(params);
 
 
 
-path = path.split("/");
-let id = path[path.length-1];
-
+if (searchParams.has("room") === false)
+  window.location.replace("/loopychess/docs/game/");
 if (searchParams.has("name") === false)
   window.location.replace("/loopychess/docs/join/"+id);
 
 let name = searchParams.get("name");
+let id = searchParams.get("room");
 
 
 let socket;
