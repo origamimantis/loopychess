@@ -18,11 +18,12 @@ if (rootdir != "")
 
 if (searchParams.has("room") === false)
   window.location.replace("/" + rootdir);
+let id = searchParams.get("room");
+
 if (searchParams.has("name") === false)
   window.location.replace("/" + rootdir + "join?room="+id);
-
 let name = searchParams.get("name");
-let id = searchParams.get("room");
+
 // no more url stuff
 
 
