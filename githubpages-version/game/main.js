@@ -16,11 +16,7 @@ let searchParams = new URLSearchParams(params);
 
 
 let a = realurl.split("/");
-console.log(a)
-let rightcut = 1;
-if (a[a.length-1] == "")
-  rightcut = 2;
-let rootdir = a.slice(3, -rightcut).join("/") + "/"
+let rootdir = a.slice(3, -2).join("/") + "/"
 console.log(rootdir)
 
 if (searchParams.has("room") === false)
