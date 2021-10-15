@@ -21,7 +21,7 @@ path = path.split("/");
 let id = path[path.length-1];
 
 if (searchParams.has("name") === false)
-  window.location.replace("/loopychess/join/"+id);
+  window.location.replace("/loopychess/docs/join/"+id);
 
 let name = searchParams.get("name");
 
