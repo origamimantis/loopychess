@@ -34,7 +34,7 @@ const server = http.createServer(app)
 server.listen(port, () => console.log("Live on port " + port));
 
 let cors = {
-  origin: "http://foonkychess.herokuapp.com",
+  origins: ["http://foonkychess.herokuapp.com", "https://origamimantis.github.io"],
   methods: ["GET", "POST"],
   credentials: true};
 
