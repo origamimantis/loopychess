@@ -16,13 +16,16 @@ let searchParams = new URLSearchParams(params);
 
 
 let a = realurl.split("/");
-let rootdir = a.slice(3, -1).join("/")
+let rightcut = 1;
+if (a[a.length-1] == "")
+  rightcut = 2;
+let rootdir = a.slice(3, -rightcut).join("/") + "/"
 console.log(rootdir)
 
 if (searchParams.has("room") === false)
-  window.location.replace("/loopychess/");
+  window.location.replace("/" + rootdir);
 if (searchParams.has("name") === false)
-  window.location.replace("/loopychess/join?room="+id);
+  window.location.replace("/" + rootdir + "join?room="+id);
 
 let name = searchParams.get("name");
 let id = searchParams.get("room");
