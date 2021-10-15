@@ -4,7 +4,6 @@
 
 let realurl = window.location.href;
 
-let a = realurl.split("/");
 let hostname = "https://foonkychess.herokuapp.com"
 
 // url parsing
@@ -16,6 +15,9 @@ let searchParams = new URLSearchParams(params);
 
 
 
+let a = realurl.split("/");
+let rootdir = a.slice(3, -1).join("/")
+console.log(rootdir)
 
 if (searchParams.has("room") === false)
   window.location.replace("/loopychess/");
