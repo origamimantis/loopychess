@@ -632,7 +632,7 @@ const promotionChoices = [QUEEN, KNIGHT, ROOK, BISHOP];
 window.onload = async () => {
 
   let mload = MusicPlayer.loadMusic();
-  document.getElementById("joincopy").textContent=new URL(realurl) + "/" + rootdir + "join?room="+id.toLowerCase();
+  document.getElementById("joincopy").textContent=new URL(realurl).hostname+"/"+rootdir+"join?room="+id.toLowerCase();
   document.getElementById("curRoom").textContent = "Current room: " + id;
 
   piece_imgs = await loadPieceImgs();
