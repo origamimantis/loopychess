@@ -1,18 +1,15 @@
 'use strict';
 
 
-
-let realurl = window.location.href;
-
 let hostname = "https://foonkychess.herokuapp.com"
-
 
 //window.history.pushState({}, document.title, window.location.pathname);
 
 // url stuff
+let realurl = window.location.href;
+
 let [path, params] = realurl.split("?");
 let searchParams = new URLSearchParams(params);
-
 
 let a = realurl.split("/");
 let rootdir = a.slice(3, -2).join("/") + "/"

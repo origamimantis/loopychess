@@ -1,6 +1,9 @@
 const allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 
+let realurl = window.location.href;
+
+let [path, params] = realurl.split("?");
 let searchParams = new URLSearchParams(params);
 
 let a = realurl.split("/");
