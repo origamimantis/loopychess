@@ -17,7 +17,10 @@ if (rootdir != "")
   rootdir += "/"
 
 if (searchParams.has("room") === false)
+{
+  console.log("wtf");
   window.location.replace("/" + rootdir);
+}
 let id = searchParams.get("room");
 
 if (searchParams.has("name") === false)
