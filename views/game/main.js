@@ -1,29 +1,27 @@
 'use strict';
 
 
+let hostname = "https://foonkychess.herokuapp.com"
 
+//window.history.pushState({}, document.title, window.location.pathname);
+
+// url stuff
 let realurl = window.location.href;
 
-let a = realurl.split("/");
-let hostname = a[0] + "//" + a[2];
-
-// url parsing
-
 let [path, params] = realurl.split("?");
-window.history.pushState({}, document.title, window.location.pathname);
-
 let searchParams = new URLSearchParams(params);
 
+let a = realurl.split("/");
+let rootdir = a.slice(3, -2).join("/") + "/"
 
-
-
-path = path.split("/");
-let id = path[path.length-1];
-
+if (searchParams.has("room") === false)
+  window.location.replace("/" + rootdir);
 if (searchParams.has("name") === false)
-  window.location.replace("/join/"+id);
+  window.location.replace("/" + rootdir + "join?room="+id);
 
 let name = searchParams.get("name");
+let id = searchParams.get("room");
+// no more url stuff
 
 
 let socket;

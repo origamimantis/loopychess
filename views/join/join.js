@@ -1,8 +1,18 @@
 const allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-let path = window.location.href.split("?")[0].split("/");
 
-let id = path[path.length-1];
+let realurl = window.location.href;
+
+let [path, params] = realurl.split("?");
+let searchParams = new URLSearchParams(params);
+
+let a = realurl.split("/");
+let rootdir = a.slice(3, -2).join("/") + "/"
+
+if (searchParams.has("room") === false)
+  window.location.replace("/" + rootdir);
+
+let id = searchParams.get("room");
 
 
 // https://stackoverflow.com/questions/4434076/best-way-to-alphanumeric-check-in-javascript
@@ -42,5 +52,5 @@ form.addEventListener('submit', (e) =>
     return
   }
   error.textContent = "";
-  window.location.replace("/game/"+id.toLowerCase()+"?name=" + name.value);
+  window.location.replace("/" + rootdir + "game?room="+id.toLowerCase()+"&name=" + name.value);
 });

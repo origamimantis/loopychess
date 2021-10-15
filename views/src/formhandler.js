@@ -1,4 +1,13 @@
 
+let realurl = window.location.href;
+
+let [path, params] = realurl.split("?");
+let searchParams = new URLSearchParams(params);
+
+let a = realurl.split("/");
+let rootdir = a.slice(3, -1).join("/") + "/"
+
+
 
 const allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
@@ -64,5 +73,5 @@ form.addEventListener("submit", (e)=>
     return
   }
   error.textContent = "";
-  window.location.replace("/game/"+room.value.toLowerCase()+"?name=" + name.value);
+  window.location.replace("/" + rootdir + "game?room="+room.value.toLowerCase()+"&name=" + name.value);
 });

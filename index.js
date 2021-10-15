@@ -18,10 +18,10 @@ app.get("/",  (req, res) => {
 	res.sendFile( __dirname + "/views/index.html");
 });
 app.get("/join/"+an_re+an_re+an_re+an_re,  (req, res) => {
-  res.sendFile( __dirname + "/views/join.html");
+  res.sendFile( __dirname + "/views/join/index.html");
 });
 app.get("/game/"+an_re+an_re+an_re+an_re,  (req, res) => {
-  res.sendFile( __dirname + "/views/game.html");
+  res.sendFile( __dirname + "/views/game/index.html");
 });
 app.get("/test",  (req, res) => {
 	res.sendFile( __dirname + "/views/test.html");
