@@ -5,7 +5,7 @@ let [path, params] = realurl.split("?");
 let searchParams = new URLSearchParams(params);
 
 let a = realurl.split("/");
-let rootdir = a.slice(3, -2).join("/") + "/"
+let rootdir = a.slice(3, -1).join("/") + "/"
 
 
 
