@@ -64,5 +64,5 @@ form.addEventListener("submit", (e)=>
     return
   }
   error.textContent = "";
-  window.location.replace("/loopychess/docs/game.html?room="+room.value.toLowerCase()+"&name=" + name.value);
+  window.location.replace("/loopychess/docs/game?room="+room.value.toLowerCase()+"&name=" + name.value);
 });

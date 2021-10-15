@@ -10,7 +10,7 @@ let hostname = "https://foonkychess.herokuapp.com"
 // url parsing
 
 let [path, params] = realurl.split("?");
-window.history.pushState({}, document.title, window.location.pathname);
+//window.history.pushState({}, document.title, window.location.pathname);
 
 let searchParams = new URLSearchParams(params);
 
@@ -20,7 +20,7 @@ let searchParams = new URLSearchParams(params);
 if (searchParams.has("room") === false)
   window.location.replace("/loopychess/docs/");
 if (searchParams.has("name") === false)
-  window.location.replace("/loopychess/docs/join.html?room="+id);
+  window.location.replace("/loopychess/docs/join?room="+id);
 
 let name = searchParams.get("name");
 let id = searchParams.get("room");
