@@ -6,6 +6,7 @@ let searchParams = new URLSearchParams(params);
 
 let a = realurl.split("/");
 let rootdir = a.slice(3, -1).join("/") + "/"
+console.log(rootdir)
 
 
 
