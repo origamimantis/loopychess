@@ -16,6 +16,7 @@ let searchParams = new URLSearchParams(params);
 
 
 let a = realurl.split("/");
+console.log(a)
 let rightcut = 1;
 if (a[a.length-1] == "")
   rightcut = 2;
