@@ -6,7 +6,7 @@ let port = process.env.PORT;
 if (process.argv[2] == "test")
   port = 4445;
 
-app.use(express.static(__dirname + "/docs/src"));
+app.use(express.static(__dirname + "/views/src"));
 
 const an_re = "[A-Za-z0-9]"
 
@@ -15,16 +15,16 @@ const an_re = "[A-Za-z0-9]"
 
 
 app.get("/",  (req, res) => {
-	res.sendFile( __dirname + "/docs/index.html");
+	res.sendFile( __dirname + "/views/index.html");
 });
 app.get("/join/"+an_re+an_re+an_re+an_re,  (req, res) => {
-  res.sendFile( __dirname + "/docs/join.html");
+  res.sendFile( __dirname + "/views/join.html");
 });
 app.get("/game/"+an_re+an_re+an_re+an_re,  (req, res) => {
-  res.sendFile( __dirname + "/docs/game.html");
+  res.sendFile( __dirname + "/views/game.html");
 });
 app.get("/test",  (req, res) => {
-	res.sendFile( __dirname + "/docs/test.html");
+	res.sendFile( __dirname + "/views/test.html");
 });
 
 
