@@ -8,16 +8,14 @@ let hostname = "https://foonkychess.herokuapp.com"
 
 // url parsing
 
+window.history.pushState({}, document.title, window.location.pathname);
+
 let [path, params] = realurl.split("?");
-//window.history.pushState({}, document.title, window.location.pathname);
-
 let searchParams = new URLSearchParams(params);
-
 
 
 let a = realurl.split("/");
 let rootdir = a.slice(3, -2).join("/") + "/"
-console.log(rootdir)
 
 if (searchParams.has("room") === false)
   window.location.replace("/" + rootdir);

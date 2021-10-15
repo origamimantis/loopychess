@@ -1,4 +1,8 @@
 
+let a = realurl.split("/");
+let rootdir = a.slice(3, -2).join("/") + "/"
+
+
 
 const allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
@@ -64,5 +68,5 @@ form.addEventListener("submit", (e)=>
     return
   }
   error.textContent = "";
-  window.location.replace("/loopychess/game?room="+room.value.toLowerCase()+"&name=" + name.value);
+  window.location.replace("/" + rootdir + "game?room="+room.value.toLowerCase()+"&name=" + name.value);
 });
