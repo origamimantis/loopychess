@@ -13,6 +13,7 @@ let searchParams = new URLSearchParams(params);
 
 let a = realurl.split("/");
 let rootdir = a.slice(3, -2).join("/")
+let currentwebsitename = a[2];
 if (rootdir != "")
   rootdir += "/"
 
@@ -640,7 +641,7 @@ const promotionChoices = [QUEEN, KNIGHT, ROOK, BISHOP];
 window.onload = async () => {
 
   let mload = MusicPlayer.loadMusic();
-  document.getElementById("joincopy").textContent=new URL(realurl).hostname+"/"+rootdir+"join?room="+id.toLowerCase();
+  document.getElementById("joincopy").textContent = currentwebsitename+"/"+rootdir+"join?room="+id.toLowerCase();
   document.getElementById("curRoom").textContent = "Current room: " + id;
 
   piece_imgs = await loadPieceImgs();
