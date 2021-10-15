@@ -18,9 +18,9 @@ let searchParams = new URLSearchParams(params);
 
 
 if (searchParams.has("room") === false)
-  window.location.replace("/loopychess/docs/");
+  window.location.replace("/loopychess/");
 if (searchParams.has("name") === false)
-  window.location.replace("/loopychess/docs/join?room="+id);
+  window.location.replace("/loopychess/join?room="+id);
 
 let name = searchParams.get("name");
 let id = searchParams.get("room");

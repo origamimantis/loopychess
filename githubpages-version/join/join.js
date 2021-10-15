@@ -5,7 +5,7 @@ let path = window.location.href.split("?")[0].split("/");
 let searchParams = new URLSearchParams(params);
 
 if (searchParams.has("room") === false)
-  window.location.replace("/loopychess/docs/");
+  window.location.replace("/loopychess/");
 
 let id = searchParams.get("room");
 
@@ -47,5 +47,5 @@ form.addEventListener('submit', (e) =>
     return
   }
   error.textContent = "";
-  window.location.replace("/loopychess/docs/game?room="+id.toLowerCase()+"&name=" + name.value);
+  window.location.replace("/loopychess/game?room="+id.toLowerCase()+"&name=" + name.value);
 });
