@@ -6,10 +6,10 @@ let realurl = window.location.href;
 
 let hostname = "https://foonkychess.herokuapp.com"
 
-// url parsing
 
-window.history.pushState({}, document.title, window.location.pathname);
+//window.history.pushState({}, document.title, window.location.pathname);
 
+// url stuff
 let [path, params] = realurl.split("?");
 let searchParams = new URLSearchParams(params);
 
@@ -24,6 +24,7 @@ if (searchParams.has("name") === false)
 
 let name = searchParams.get("name");
 let id = searchParams.get("room");
+// no more url stuff
 
 
 let socket;
