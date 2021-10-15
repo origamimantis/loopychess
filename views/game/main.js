@@ -16,16 +16,20 @@ let rootdir = a.slice(3, -2).join("/")
 if (rootdir != "")
   rootdir += "/"
 
+
+let id;
+let name;
 if (searchParams.has("room") === false)
 {
-  console.log("wtf");
   window.location.replace("/" + rootdir);
 }
-let id = searchParams.get("room");
-
-if (searchParams.has("name") === false)
-  window.location.replace("/" + rootdir + "join?room="+id);
-let name = searchParams.get("name");
+else
+{
+  id = searchParams.get("room");
+  if (searchParams.has("name") === false)
+    window.location.replace("/" + rootdir + "join?room="+id);
+}
+name = searchParams.get("name");
 
 // no more url stuff
 
