@@ -1,7 +1,7 @@
 'use strict';
 
 
-let hostname = "https://foonkychess.b4a.app"
+let hostname = "https://foonkychess.onrender.com"
 
 //window.history.pushState({}, document.title, window.location.pathname);
 
